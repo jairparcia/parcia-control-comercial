@@ -1,1 +1,0 @@
-# parcia-control-comercial
