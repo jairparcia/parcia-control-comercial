@@ -4,7 +4,6 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Volt\Volt as LivewireVolt;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -18,32 +17,21 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_google_redirect_initiates_oauth_flow(): void
     {
-        $user = User::factory()->create();
+        $response = $this->get('/auth/google');
 
-        $response = LivewireVolt::test('auth.login')
-            ->set('email', $user->email)
-            ->set('password', 'password')
-            ->call('login');
-
-        $response
-            ->assertHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
-
-        $this->assertAuthenticated();
+        $response->assertRedirect();
+        $this->assertStringContainsString('accounts.google.com', $response->headers->get('Location'));
     }
 
-    public function test_users_can_not_authenticate_with_invalid_password(): void
+    public function test_authenticated_users_are_redirected_away_from_login(): void
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+        $response = $this->actingAs($user)->get('/login');
 
-        $this->assertGuest();
+        $response->assertRedirect(route('dashboard'));
     }
 
     public function test_users_can_logout(): void
