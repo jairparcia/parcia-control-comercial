@@ -10,4 +10,6 @@ interface UserRepository
     public function findByGoogleId(string $googleId): ?User;
 
     public function findOrCreateByGoogle(GoogleCallbackInput $input): User;
+
+    public function markOnboarded(int $userId): void;
 }

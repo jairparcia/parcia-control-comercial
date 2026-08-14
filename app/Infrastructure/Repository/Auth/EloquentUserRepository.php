@@ -13,6 +13,11 @@ class EloquentUserRepository implements UserRepository
         return User::where('google_id', $googleId)->first();
     }
 
+    public function markOnboarded(int $userId): void
+    {
+        User::where('id', $userId)->update(['onboarded_at' => now()]);
+    }
+
     public function findOrCreateByGoogle(GoogleCallbackInput $input): User
     {
         return User::updateOrCreate(
@@ -21,6 +26,7 @@ class EloquentUserRepository implements UserRepository
                 'name'   => $input->name,
                 'email'  => $input->email,
                 'avatar' => $input->avatar,
+                'role'   => 'external',
             ],
         );
     }
