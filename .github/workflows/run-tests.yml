@@ -41,6 +41,11 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
+      - name: Set Stripe test placeholders
+        run: |
+          echo "STRIPE_KEY=pk_test_placeholder" >> .env
+          echo "STRIPE_SECRET=sk_test_placeholder" >> .env
+
       - name: Copy .env to .env.testing
         run: cp .env .env.testing
 
