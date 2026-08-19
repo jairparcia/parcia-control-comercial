@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Application\Auth\HandleGoogleCallbackService;
-use App\Domain\Auth\Entities\GoogleCallbackInput;
 use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -17,17 +16,19 @@ class GoogleCallbackController extends Controller
     {
         $googleUser = Socialite::driver('google')->stateless()->user();
 
-        $input = new GoogleCallbackInput(
+        $result = $this->service->execute(
             googleId: $googleUser->getId(),
             name:     $googleUser->getName(),
             email:    $googleUser->getEmail(),
             avatar:   $googleUser->getAvatar(),
         );
 
-        $result = $this->service->execute($input);
+        if ($result->role === 'internal') {
+            return redirect()->route('dashboard');
+        }
 
-        return $result->isNew
-            ? redirect()->route('onboarding')
-            : redirect()->route('dashboard');
+        return $result->hasOnboarded
+            ? redirect()->route('dashboard')
+            : redirect()->route('onboarding');
     }
 }

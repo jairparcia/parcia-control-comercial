@@ -83,8 +83,9 @@ class BillingPresenter
 
     public function plans(): array
     {
+        $paidPlans  = array_values(array_filter($this->availablePlans, fn ($p) => ! $p->isFree));
         $currentKey = $this->status->plan?->value;
-        $keys       = array_column($this->availablePlans, 'key');
+        $keys       = array_column($paidPlans, 'key');
         $highlight  = $this->resolveHighlight($keys);
 
         return array_map(function (PlanInfo $plan) use ($currentKey, $highlight) {
@@ -93,39 +94,14 @@ class BillingPresenter
                 'name'      => $plan->name,
                 'price'     => $plan->formattedPrice,
                 'period'    => $plan->interval === 'year' ? 'año' : 'mes',
-                'quota'     => $this->quotaLabel($plan->key),
-                'features'  => $this->featuresFor($plan->key),
+                'quota'     => number_format($plan->quota) . ' escaneos/mes',
+                'features'  => $plan->features,
                 'current'   => $plan->key === $currentKey,
                 'highlight' => $plan->key === $highlight,
             ];
-        }, $this->availablePlans);
+        }, $paidPlans);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────
-
-    private function quotaLabel(string $key): string
-    {
-        // TODO: recibir quota desde QuotaCheckResult cuando CheckQuotaService esté implementado.
-        // Por ahora se lee de config — aceptable provisionalmente ya que config/plans.php
-        // es la única fuente de cuotas hasta que exista la tabla plans en BD.
-        $quota = config("plans.{$key}.quota", 0);
-
-        return number_format($quota) . ' escaneos/mes';
-    }
-
-    private function featuresFor(string $key): array
-    {
-        return match ($key) {
-            'starter' => ['TikTok e Instagram', 'Exportación CSV', 'Portal web'],
-            'pro'     => ['Todo lo de Starter', 'Webhooks', 'Soporte prioritario'],
-            'agency'  => ['Todo lo de Pro', 'Multi-usuario próximamente', 'SLA garantizado'],
-            default   => [],
-        };
-    }
-
-    /**
-     * Highlight the middle plan (Pro), or the second plan if Pro is absent.
-     */
     private function resolveHighlight(array $keys): ?string
     {
         if (in_array('pro', $keys)) {

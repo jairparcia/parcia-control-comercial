@@ -8,9 +8,19 @@ use App\Models\User;
 
 class EloquentUserRepository implements UserRepository
 {
+    public function findById(int $userId): User
+    {
+        return User::findOrFail($userId);
+    }
+
     public function findByGoogleId(string $googleId): ?User
     {
         return User::where('google_id', $googleId)->first();
+    }
+
+    public function findByStripeCustomerId(string $stripeCustomerId): ?User
+    {
+        return User::where('stripe_id', $stripeCustomerId)->first();
     }
 
     public function markOnboarded(int $userId): void
@@ -18,16 +28,27 @@ class EloquentUserRepository implements UserRepository
         User::where('id', $userId)->update(['onboarded_at' => now()]);
     }
 
-    public function findOrCreateByGoogle(GoogleCallbackInput $input): User
+    public function findOrCreateByGoogle(GoogleCallbackInput $input, string $role): User
     {
-        return User::updateOrCreate(
-            ['google_id' => $input->googleId],
-            [
+        $existing = User::where('google_id', $input->googleId)->first();
+
+        if ($existing) {
+            $existing->update([
                 'name'   => $input->name,
                 'email'  => $input->email,
                 'avatar' => $input->avatar,
-                'role'   => 'external',
-            ],
-        );
+                'role'   => $role,
+            ]);
+
+            return $existing->fresh();
+        }
+
+        return User::create([
+            'google_id' => $input->googleId,
+            'name'      => $input->name,
+            'email'     => $input->email,
+            'avatar'    => $input->avatar,
+            'role'      => $role,
+        ]);
     }
 }

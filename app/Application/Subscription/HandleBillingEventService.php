@@ -4,12 +4,19 @@ namespace App\Application\Subscription;
 
 use App\Domain\Subscription\Entities\BillingEventInput;
 use App\Domain\Subscription\Enums\BillingEvent;
+use App\Domain\Subscription\Enums\Plan;
 use Illuminate\Support\Facades\Log;
 
 class HandleBillingEventService
 {
-    public function execute(BillingEventInput $input): void
+    public function execute(string $event, ?int $userId, ?string $planKey): void
     {
+        $input = new BillingEventInput(
+            event:  BillingEvent::from($event),
+            userId: $userId,
+            plan:   $planKey ? Plan::from($planKey) : null,
+        );
+
         match ($input->event) {
             BillingEvent::SubscriptionActivated => $this->onActivated($input),
             BillingEvent::SubscriptionCancelled => $this->onCancelled($input),
