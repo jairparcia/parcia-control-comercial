@@ -2,14 +2,14 @@
 
 namespace App\Application\Admin;
 
-use App\Domain\Admin\Contracts\PlanAdminRepository;
-use App\Domain\Admin\Contracts\PlanProviderGateway;
+use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
+use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
 
 class ToggleAdminPlanService
 {
     public function __construct(
-        private readonly PlanAdminRepository $plans,
-        private readonly PlanProviderGateway $provider,
+        private readonly PlanAdminRepositoryInterface $plans,
+        private readonly PlanProviderGatewayInterface $provider,
     ) {}
 
     public function execute(int $planId): bool

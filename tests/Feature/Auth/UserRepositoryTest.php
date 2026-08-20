@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Infrastructure\Repository\Auth\EloquentUserRepository;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,7 +14,7 @@ beforeEach(function () {
 // ── findOrCreateByGoogle ──────────────────────────────────────────────────
 
 it('creates a new user with external role on first google login', function () {
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-123',
         name:     'Carlos Molina',
         email:    'carlos@example.com',
@@ -31,7 +31,7 @@ it('creates a new user with external role on first google login', function () {
 });
 
 it('creates a new user with internal role for parcia.co email', function () {
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-parcia',
         name:     'Parcia Member',
         email:    'member@parcia.co',
@@ -47,7 +47,7 @@ it('creates a new user with internal role for parcia.co email', function () {
 it('updates existing user data on subsequent google logins', function () {
     User::factory()->create(['google_id' => 'google-123', 'name' => 'Nombre Viejo']);
 
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-123',
         name:     'Nombre Nuevo',
         email:    'nuevo@example.com',
@@ -63,7 +63,7 @@ it('updates existing user data on subsequent google logins', function () {
 it('does not override role when updating existing user', function () {
     User::factory()->internal()->create(['google_id' => 'google-internal']);
 
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-internal',
         name:     'Parcia Team',
         email:    'team@parcia.co',

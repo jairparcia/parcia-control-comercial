@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Application\Subscription\CreateCheckoutSessionService;
 use App\Application\Subscription\GetAvailablePlansService;
-use App\Domain\Auth\Contracts\UserRepository;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Http\Presenters\Onboarding\OnboardingPresenter;
 use Livewire\Component;
 
@@ -12,13 +12,13 @@ class OnboardingComponent extends Component
 {
     private GetAvailablePlansService $plansService;
     private CreateCheckoutSessionService $checkoutService;
-    private UserRepository $users;
+    private UserRepositoryInterface $users;
     private OnboardingPresenter $presenter;
 
     public function boot(
         GetAvailablePlansService $plansService,
         CreateCheckoutSessionService $checkoutService,
-        UserRepository $users,
+        UserRepositoryInterface $users,
         OnboardingPresenter $presenter,
     ): void {
         $this->plansService    = $plansService;
@@ -42,7 +42,7 @@ class OnboardingComponent extends Component
             cancelUrl:  route('onboarding'),
         );
 
-        $this->redirect($result->checkoutUrl);
+        $this->redirect($result->checkoutUrl, navigate: false);
     }
 
     public function render()

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Auth\Entities;
 
-readonly class GoogleCallbackInput
+readonly class GoogleCallbackInputDTO
 {
     public function __construct(
         public string $googleId,

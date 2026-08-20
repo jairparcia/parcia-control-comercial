@@ -2,13 +2,13 @@
 
 namespace App\Infrastructure\Repository\Admin;
 
-use App\Domain\Admin\Contracts\PlanAdminRepository;
-use App\Domain\Admin\Entities\CreateAdminPlanInput;
-use App\Domain\Admin\Entities\UpdateAdminPlanInput;
+use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
+use App\Domain\Admin\Entities\CreateAdminPlanInputDTO;
+use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 use App\Models\SubscriptionPlan;
 
-class EloquentPlanAdminRepository implements PlanAdminRepository
+class EloquentPlanAdminRepository implements PlanAdminRepositoryInterface
 {
     public function all(): array
     {
@@ -25,7 +25,7 @@ class EloquentPlanAdminRepository implements PlanAdminRepository
     }
 
     public function create(
-        CreateAdminPlanInput $input,
+        CreateAdminPlanInputDTO $input,
         ?string $stripeProductId,
         ?string $stripePriceId,
     ): AdminPlanResult {
@@ -49,7 +49,7 @@ class EloquentPlanAdminRepository implements PlanAdminRepository
 
     public function update(
         int $id,
-        UpdateAdminPlanInput $input,
+        UpdateAdminPlanInputDTO $input,
         ?string $newStripePriceId = null,
     ): AdminPlanResult {
         $plan = SubscriptionPlan::findOrFail($id);

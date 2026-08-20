@@ -2,11 +2,11 @@
 
 namespace App\Domain\Admin\Contracts;
 
-use App\Domain\Admin\Entities\CreateAdminPlanInput;
-use App\Domain\Admin\Entities\UpdateAdminPlanInput;
+use App\Domain\Admin\Entities\CreateAdminPlanInputDTO;
+use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 
-interface PlanAdminRepository
+interface PlanAdminRepositoryInterface
 {
     /** @return AdminPlanResult[] */
     public function all(): array;
@@ -14,14 +14,14 @@ interface PlanAdminRepository
     public function findById(int $id): AdminPlanResult;
 
     public function create(
-        CreateAdminPlanInput $input,
+        CreateAdminPlanInputDTO $input,
         ?string $stripeProductId,
         ?string $stripePriceId,
     ): AdminPlanResult;
 
     public function update(
         int $id,
-        UpdateAdminPlanInput $input,
+        UpdateAdminPlanInputDTO $input,
         ?string $newStripePriceId = null,
     ): AdminPlanResult;
 

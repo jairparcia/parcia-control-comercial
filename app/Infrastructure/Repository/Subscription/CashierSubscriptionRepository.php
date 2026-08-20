@@ -2,14 +2,14 @@
 
 namespace App\Infrastructure\Repository\Subscription;
 
-use App\Domain\Subscription\Contracts\SubscriptionRepository;
+use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
 use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 
-class CashierSubscriptionRepository implements SubscriptionRepository
+class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
 {
     public function getStatus(int $userId): SubscriptionStatusResult
     {

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Application\Subscription\HandleBillingEventService;
-use App\Domain\Auth\Contracts\UserRepository;
-use App\Domain\Subscription\Contracts\SubscriptionRepository;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
+use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierWebhookController;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -12,8 +12,8 @@ class StripeWebhookController extends CashierWebhookController
 {
     public function __construct(
         private readonly HandleBillingEventService $billingEventService,
-        private readonly UserRepository $users,
-        private readonly SubscriptionRepository $subscriptions,
+        private readonly UserRepositoryInterface $users,
+        private readonly SubscriptionRepositoryInterface $subscriptions,
     ) {}
 
     protected function handleInvoicePaid(array $payload): Response

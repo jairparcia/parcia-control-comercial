@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Repository\Auth;
 
-use App\Domain\Auth\Contracts\UserRepository;
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Models\User;
 
-class EloquentUserRepository implements UserRepository
+class EloquentUserRepository implements UserRepositoryInterface
 {
     public function findById(int $userId): User
     {
@@ -28,7 +28,7 @@ class EloquentUserRepository implements UserRepository
         User::where('id', $userId)->update(['onboarded_at' => now()]);
     }
 
-    public function findOrCreateByGoogle(GoogleCallbackInput $input, string $role): User
+    public function findOrCreateByGoogle(GoogleCallbackInputDTO $input, string $role): User
     {
         $existing = User::where('google_id', $input->googleId)->first();
 

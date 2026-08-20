@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
 // Admin — internal users only (enforced in backend middleware, not just UI)
 Route::middleware(['auth', 'requires.internal'])->prefix('admin')->name('admin.')->group(function () {
     Route::view('plans', 'admin.plans')->name('plans');
+    Route::view('subscriptions', 'admin.subscriptions')->name('subscriptions');
 });
 
 // Stripe webhooks — no auth middleware, verified by Stripe signature

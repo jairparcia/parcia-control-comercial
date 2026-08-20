@@ -1,9 +1,9 @@
 <?php
 
 use App\Application\Admin\UpdateAdminPlanService;
-use App\Domain\Admin\Contracts\PlanAdminRepository;
-use App\Domain\Admin\Contracts\PlanProviderGateway;
-use App\Domain\Admin\Entities\UpdateAdminPlanInput;
+use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
+use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
+use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -52,12 +52,12 @@ it('archives the old price ID when the price changes', function () {
     $current = makePlanResult(['stripePriceId' => 'price_OLD', 'unitAmount' => 30000]);
     $updated = makePlanResult(['stripePriceId' => 'price_NEW', 'unitAmount' => 50000]);
 
-    $plans = Mockery::mock(PlanAdminRepository::class);
+    $plans = Mockery::mock(PlanAdminRepositoryInterface::class);
     $plans->allows('findById')->with(1)->andReturn($current);
     $plans->expects('appendLegacyPriceId')->with(1, 'price_OLD')->once();
     $plans->allows('update')->andReturn($updated);
 
-    $provider = Mockery::mock(PlanProviderGateway::class);
+    $provider = Mockery::mock(PlanProviderGatewayInterface::class);
     $provider->allows('replacePlanPrice')->andReturn('price_NEW');
 
     $result = executeUpdate(new UpdateAdminPlanService($plans, $provider), overrides: ['unitAmount' => 50000]);
@@ -69,12 +69,12 @@ it('does not archive when the price is unchanged', function () {
     $current = makePlanResult(['unitAmount' => 30000]);
     $updated = makePlanResult(['unitAmount' => 30000]);
 
-    $plans = Mockery::mock(PlanAdminRepository::class);
+    $plans = Mockery::mock(PlanAdminRepositoryInterface::class);
     $plans->allows('findById')->with(1)->andReturn($current);
     $plans->expects('appendLegacyPriceId')->never();
     $plans->allows('update')->andReturn($updated);
 
-    $provider = Mockery::mock(PlanProviderGateway::class);
+    $provider = Mockery::mock(PlanProviderGatewayInterface::class);
     $provider->expects('replacePlanPrice')->never();
 
     executeUpdate(new UpdateAdminPlanService($plans, $provider), overrides: ['unitAmount' => 30000]);
@@ -84,12 +84,12 @@ it('does not archive when the plan has no stripe product', function () {
     $current = makePlanResult(['stripeProductId' => null, 'stripePriceId' => null]);
     $updated = makePlanResult(['stripeProductId' => null, 'stripePriceId' => null]);
 
-    $plans = Mockery::mock(PlanAdminRepository::class);
+    $plans = Mockery::mock(PlanAdminRepositoryInterface::class);
     $plans->allows('findById')->with(1)->andReturn($current);
     $plans->expects('appendLegacyPriceId')->never();
     $plans->allows('update')->andReturn($updated);
 
-    $provider = Mockery::mock(PlanProviderGateway::class);
+    $provider = Mockery::mock(PlanProviderGatewayInterface::class);
     $provider->expects('replacePlanPrice')->never();
 
     executeUpdate(new UpdateAdminPlanService($plans, $provider), overrides: ['unitAmount' => 99999]);
@@ -99,15 +99,15 @@ it('propagates the new price ID to the update call', function () {
     $current = makePlanResult(['unitAmount' => 30000]);
     $updated = makePlanResult(['stripePriceId' => 'price_NEW', 'unitAmount' => 50000]);
 
-    $plans = Mockery::mock(PlanAdminRepository::class);
+    $plans = Mockery::mock(PlanAdminRepositoryInterface::class);
     $plans->allows('findById')->andReturn($current);
     $plans->allows('appendLegacyPriceId');
     $plans->expects('update')
-        ->with(1, Mockery::type(UpdateAdminPlanInput::class), 'price_NEW')
+        ->with(1, Mockery::type(UpdateAdminPlanInputDTO::class), 'price_NEW')
         ->once()
         ->andReturn($updated);
 
-    $provider = Mockery::mock(PlanProviderGateway::class);
+    $provider = Mockery::mock(PlanProviderGatewayInterface::class);
     $provider->allows('replacePlanPrice')->andReturn('price_NEW');
 
     executeUpdate(new UpdateAdminPlanService($plans, $provider), overrides: ['unitAmount' => 50000]);

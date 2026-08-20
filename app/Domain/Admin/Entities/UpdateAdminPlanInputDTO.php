@@ -2,11 +2,10 @@
 
 namespace App\Domain\Admin\Entities;
 
-readonly class CreateAdminPlanInput
+readonly class UpdateAdminPlanInputDTO
 {
     public function __construct(
         public string $name,
-        public string $key,
         public string $description,
         public array  $features,
         public int    $quota,

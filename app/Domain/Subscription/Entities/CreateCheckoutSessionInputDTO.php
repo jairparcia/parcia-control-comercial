@@ -2,7 +2,7 @@
 
 namespace App\Domain\Subscription\Entities;
 
-readonly class CreateCheckoutSessionInput
+readonly class CreateCheckoutSessionInputDTO
 {
     public function __construct(
         public int    $userId,

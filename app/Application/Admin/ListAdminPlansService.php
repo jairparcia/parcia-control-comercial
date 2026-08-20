@@ -2,12 +2,12 @@
 
 namespace App\Application\Admin;
 
-use App\Domain\Admin\Contracts\PlanAdminRepository;
+use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
 
 class ListAdminPlansService
 {
     public function __construct(
-        private readonly PlanAdminRepository $plans,
+        private readonly PlanAdminRepositoryInterface $plans,
     ) {}
 
     public function execute(): array

@@ -2,14 +2,14 @@
 
 namespace App\Application\Subscription;
 
-use App\Domain\Subscription\Contracts\PaymentGateway;
-use App\Domain\Subscription\Entities\CreateCheckoutSessionInput;
+use App\Domain\Subscription\Contracts\PaymentGatewayInterface;
+use App\Domain\Subscription\Entities\CreateCheckoutSessionInputDTO;
 use App\Domain\Subscription\Results\CheckoutSessionResult;
 
 class CreateCheckoutSessionService
 {
     public function __construct(
-        private readonly PaymentGateway $gateway,
+        private readonly PaymentGatewayInterface $gateway,
     ) {}
 
     public function execute(
@@ -18,7 +18,7 @@ class CreateCheckoutSessionService
         string $successUrl,
         string $cancelUrl,
     ): CheckoutSessionResult {
-        $input = new CreateCheckoutSessionInput(
+        $input = new CreateCheckoutSessionInputDTO(
             userId:     $userId,
             planKey:    $planKey,
             successUrl: $successUrl,

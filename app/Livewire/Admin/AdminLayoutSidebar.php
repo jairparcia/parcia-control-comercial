@@ -28,6 +28,13 @@ class AdminLayoutSidebar extends Component
                 'icon'     => 'plans',
                 'isActive' => $this->active === 'plans',
             ],
+            [
+                'key'      => 'subscriptions',
+                'label'    => 'Subscriptions',
+                'route'    => route('admin.subscriptions'),
+                'icon'     => 'subscriptions',
+                'isActive' => $this->active === 'subscriptions',
+            ],
         ];
 
         return view('livewire.admin.admin-layout-sidebar', [

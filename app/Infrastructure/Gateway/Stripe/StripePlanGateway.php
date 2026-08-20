@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Gateway\Stripe;
 
-use App\Domain\Admin\Contracts\PlanProviderGateway;
+use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
 use App\Domain\Admin\Results\ProviderPlanIds;
 use Stripe\StripeClient;
 
-class StripePlanGateway implements PlanProviderGateway
+class StripePlanGateway implements PlanProviderGatewayInterface
 {
     public function __construct(
         private readonly StripeClient $stripe,

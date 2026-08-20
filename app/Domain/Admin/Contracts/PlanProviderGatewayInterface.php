@@ -4,7 +4,7 @@ namespace App\Domain\Admin\Contracts;
 
 use App\Domain\Admin\Results\ProviderPlanIds;
 
-interface PlanProviderGateway
+interface PlanProviderGatewayInterface
 {
     public function createPlan(string $name, int $unitAmount, string $currency, string $interval): ProviderPlanIds;
 

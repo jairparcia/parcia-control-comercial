@@ -2,10 +2,10 @@
 
 namespace App\Domain\Auth\Contracts;
 
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Models\User;
 
-interface UserRepository
+interface UserRepositoryInterface
 {
     public function findById(int $userId): User;
 
@@ -13,7 +13,7 @@ interface UserRepository
 
     public function findByStripeCustomerId(string $stripeCustomerId): ?User;
 
-    public function findOrCreateByGoogle(GoogleCallbackInput $input, string $role): User;
+    public function findOrCreateByGoogle(GoogleCallbackInputDTO $input, string $role): User;
 
     public function markOnboarded(int $userId): void;
 }

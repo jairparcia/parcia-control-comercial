@@ -4,7 +4,7 @@ namespace App\Domain\Subscription\Contracts;
 
 use App\Domain\Subscription\Results\PlanInfo;
 
-interface SubscriptionPlanRepository
+interface SubscriptionPlanRepositoryInterface
 {
     /** @return PlanInfo[] */
     public function findAllActive(): array;

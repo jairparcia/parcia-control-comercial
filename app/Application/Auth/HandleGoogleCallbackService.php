@@ -2,15 +2,15 @@
 
 namespace App\Application\Auth;
 
-use App\Domain\Auth\Contracts\UserRepository;
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Domain\Auth\Results\AuthenticatedUserResult;
 use Illuminate\Support\Facades\Auth;
 
 class HandleGoogleCallbackService
 {
     public function __construct(
-        private readonly UserRepository $users,
+        private readonly UserRepositoryInterface $users,
     ) {}
 
     private function resolveRole(string $email, ?string $existingRole): string
@@ -33,7 +33,7 @@ class HandleGoogleCallbackService
 
         $role = $this->resolveRole($email, $existing?->role);
 
-        $input = new GoogleCallbackInput(
+        $input = new GoogleCallbackInputDTO(
             googleId: $googleId,
             name:     $name,
             email:    $email,

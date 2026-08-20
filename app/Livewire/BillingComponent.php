@@ -33,7 +33,7 @@ class BillingComponent extends Component
             cancelUrl:  route('billing'),
         );
 
-        $this->redirect($result->checkoutUrl);
+        $this->redirect($result->checkoutUrl, navigate: false);
     }
 
     public function render()

@@ -2,12 +2,12 @@
 
 namespace App\Infrastructure\Repository\Subscription;
 
-use App\Domain\Subscription\Contracts\SubscriptionPlanRepository;
+use App\Domain\Subscription\Contracts\SubscriptionPlanRepositoryInterface;
 use App\Domain\Subscription\Results\PlanInfo;
 use App\Models\SubscriptionPlan;
 use RuntimeException;
 
-class EloquentSubscriptionPlanRepository implements SubscriptionPlanRepository
+class EloquentSubscriptionPlanRepository implements SubscriptionPlanRepositoryInterface
 {
     public function findAllActive(): array
     {

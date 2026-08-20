@@ -2,16 +2,16 @@
 
 namespace App\Application\Admin;
 
-use App\Domain\Admin\Contracts\PlanAdminRepository;
-use App\Domain\Admin\Contracts\PlanProviderGateway;
-use App\Domain\Admin\Entities\UpdateAdminPlanInput;
+use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
+use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
+use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 
 class UpdateAdminPlanService
 {
     public function __construct(
-        private readonly PlanAdminRepository $plans,
-        private readonly PlanProviderGateway $provider,
+        private readonly PlanAdminRepositoryInterface $plans,
+        private readonly PlanProviderGatewayInterface $provider,
     ) {}
 
     public function execute(
@@ -25,7 +25,7 @@ class UpdateAdminPlanService
         string $interval,
         int    $sortOrder,
     ): AdminPlanResult {
-        $input   = new UpdateAdminPlanInput(
+        $input   = new UpdateAdminPlanInputDTO(
             name:        $name,
             description: $description,
             features:    $features,

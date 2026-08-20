@@ -1,17 +1,17 @@
 <?php
 
 use App\Application\Auth\HandleGoogleCallbackService;
-use App\Domain\Auth\Contracts\UserRepository;
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Models\User;
 
 // ── resolveRole ───────────────────────────────────────────────────────────────
 
 it('assigns internal role to new users with parcia.co email', function () {
-    $repo = Mockery::mock(UserRepository::class);
+    $repo = Mockery::mock(UserRepositoryInterface::class);
     $repo->allows('findByGoogleId')->with('g-new')->andReturn(null);
     $repo->allows('findOrCreateByGoogle')
-        ->with(Mockery::type(GoogleCallbackInput::class), 'internal')
+        ->with(Mockery::type(GoogleCallbackInputDTO::class), 'internal')
         ->andReturn(User::factory()->make(['id' => 1, 'role' => 'internal']));
 
     $result = (new HandleGoogleCallbackService($repo))->execute(
@@ -25,10 +25,10 @@ it('assigns internal role to new users with parcia.co email', function () {
 });
 
 it('assigns external role to new users with non-parcia email', function () {
-    $repo = Mockery::mock(UserRepository::class);
+    $repo = Mockery::mock(UserRepositoryInterface::class);
     $repo->allows('findByGoogleId')->with('g-ext')->andReturn(null);
     $repo->allows('findOrCreateByGoogle')
-        ->with(Mockery::type(GoogleCallbackInput::class), 'external')
+        ->with(Mockery::type(GoogleCallbackInputDTO::class), 'external')
         ->andReturn(User::factory()->make(['id' => 2, 'role' => 'external']));
 
     $result = (new HandleGoogleCallbackService($repo))->execute(
@@ -44,11 +44,11 @@ it('assigns external role to new users with non-parcia email', function () {
 it('preserves existing role on re-login regardless of email domain', function () {
     $existingUser = User::factory()->internal()->make(['id' => 1]);
 
-    $repo = Mockery::mock(UserRepository::class);
+    $repo = Mockery::mock(UserRepositoryInterface::class);
     $repo->allows('findByGoogleId')->with('g-existing')->andReturn($existingUser);
     // Role passed to repo must be the existing role, not derived from email.
     $repo->allows('findOrCreateByGoogle')
-        ->with(Mockery::type(GoogleCallbackInput::class), 'internal')
+        ->with(Mockery::type(GoogleCallbackInputDTO::class), 'internal')
         ->andReturn($existingUser);
 
     (new HandleGoogleCallbackService($repo))->execute(
@@ -64,7 +64,7 @@ it('preserves existing role on re-login regardless of email domain', function ()
 it('marks result as new when user did not exist before', function () {
     $newUser = User::factory()->make(['id' => 99, 'role' => 'external']);
 
-    $repo = Mockery::mock(UserRepository::class);
+    $repo = Mockery::mock(UserRepositoryInterface::class);
     $repo->allows('findByGoogleId')->andReturn(null);
     $repo->allows('findOrCreateByGoogle')->andReturn($newUser);
 
@@ -81,7 +81,7 @@ it('marks result as new when user did not exist before', function () {
 it('marks result as not new when user already existed', function () {
     $existing = User::factory()->make(['id' => 5, 'role' => 'external']);
 
-    $repo = Mockery::mock(UserRepository::class);
+    $repo = Mockery::mock(UserRepositoryInterface::class);
     $repo->allows('findByGoogleId')->andReturn($existing);
     $repo->allows('findOrCreateByGoogle')->andReturn($existing);
 
