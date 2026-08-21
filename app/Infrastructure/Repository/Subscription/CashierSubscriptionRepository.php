@@ -6,6 +6,7 @@ use App\Domain\Subscription\Contracts\SubscriptionRepository;
 use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
+use App\Models\SubscriptionPlan;
 use App\Models\User;
 
 class CashierSubscriptionRepository implements SubscriptionRepository
@@ -72,12 +73,9 @@ class CashierSubscriptionRepository implements SubscriptionRepository
             return null;
         }
 
-        foreach (Plan::cases() as $plan) {
-            if (config("plans.{$plan->value}.price_id") === $stripePrice) {
-                return $plan;
-            }
-        }
+        $plan = SubscriptionPlan::where('stripe_price_id', $stripePrice)->first()
+            ?? SubscriptionPlan::whereJsonContains('legacy_stripe_price_ids', $stripePrice)->first();
 
-        return null;
+        return $plan ? Plan::tryFrom($plan->key) : null;
     }
 }

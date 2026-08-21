@@ -21,13 +21,27 @@ it('creates a new user with external role on first google login', function () {
         avatar:   null,
     );
 
-    $user = $this->repo->findOrCreateByGoogle($input);
+    $user = $this->repo->findOrCreateByGoogle($input, 'external');
 
     expect($user->google_id)->toBe('google-123')
         ->and($user->role)->toBe('external')
         ->and($user->email)->toBe('carlos@example.com');
 
     $this->assertDatabaseHas('users', ['google_id' => 'google-123', 'role' => 'external']);
+});
+
+it('creates a new user with internal role for parcia.co email', function () {
+    $input = new GoogleCallbackInput(
+        googleId: 'google-parcia',
+        name:     'Parcia Member',
+        email:    'member@parcia.co',
+        avatar:   null,
+    );
+
+    $user = $this->repo->findOrCreateByGoogle($input, 'internal');
+
+    expect($user->role)->toBe('internal');
+    $this->assertDatabaseHas('users', ['google_id' => 'google-parcia', 'role' => 'internal']);
 });
 
 it('updates existing user data on subsequent google logins', function () {
@@ -40,7 +54,7 @@ it('updates existing user data on subsequent google logins', function () {
         avatar:   null,
     );
 
-    $this->repo->findOrCreateByGoogle($input);
+    $this->repo->findOrCreateByGoogle($input, 'external');
 
     $this->assertDatabaseHas('users', ['google_id' => 'google-123', 'name' => 'Nombre Nuevo']);
     $this->assertDatabaseCount('users', 1);
@@ -56,10 +70,10 @@ it('does not override role when updating existing user', function () {
         avatar:   null,
     );
 
-    $user = $this->repo->findOrCreateByGoogle($input);
+    // Service passes back the existing role — repo just persists it.
+    $user = $this->repo->findOrCreateByGoogle($input, 'internal');
 
-    // role is always set to 'external' on update — internal role is managed via seeder/admin
-    expect($user->fresh()->role)->toBe('external');
+    expect($user->fresh()->role)->toBe('internal');
 });
 
 // ── markOnboarded ─────────────────────────────────────────────────────────

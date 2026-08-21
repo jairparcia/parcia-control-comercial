@@ -12,8 +12,19 @@ class CreateCheckoutSessionService
         private readonly PaymentGateway $gateway,
     ) {}
 
-    public function execute(CreateCheckoutSessionInput $input): CheckoutSessionResult
-    {
+    public function execute(
+        int $userId,
+        string $planKey,
+        string $successUrl,
+        string $cancelUrl,
+    ): CheckoutSessionResult {
+        $input = new CreateCheckoutSessionInput(
+            userId:     $userId,
+            planKey:    $planKey,
+            successUrl: $successUrl,
+            cancelUrl:  $cancelUrl,
+        );
+
         $url = $this->gateway->createCheckoutUrl($input);
 
         return new CheckoutSessionResult(checkoutUrl: $url);

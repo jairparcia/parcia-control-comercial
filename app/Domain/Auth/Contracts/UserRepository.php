@@ -7,9 +7,13 @@ use App\Models\User;
 
 interface UserRepository
 {
+    public function findById(int $userId): User;
+
     public function findByGoogleId(string $googleId): ?User;
 
-    public function findOrCreateByGoogle(GoogleCallbackInput $input): User;
+    public function findByStripeCustomerId(string $stripeCustomerId): ?User;
+
+    public function findOrCreateByGoogle(GoogleCallbackInput $input, string $role): User;
 
     public function markOnboarded(int $userId): void;
 }

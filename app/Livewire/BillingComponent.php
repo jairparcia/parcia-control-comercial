@@ -5,8 +5,6 @@ namespace App\Livewire;
 use App\Application\Subscription\CreateCheckoutSessionService;
 use App\Application\Subscription\GetAvailablePlansService;
 use App\Application\Subscription\GetSubscriptionStatusService;
-use App\Domain\Subscription\Entities\CreateCheckoutSessionInput;
-use App\Domain\Subscription\Enums\Plan;
 use App\Http\Presenters\BillingPresenter;
 use Livewire\Component;
 
@@ -28,14 +26,12 @@ class BillingComponent extends Component
 
     public function checkout(string $key): void
     {
-        $input = new CreateCheckoutSessionInput(
+        $result = $this->checkoutService->execute(
             userId:     auth()->id(),
-            plan:       Plan::from($key),
+            planKey:    $key,
             successUrl: route('billing'),
             cancelUrl:  route('billing'),
         );
-
-        $result = $this->checkoutService->execute($input);
 
         $this->redirect($result->checkoutUrl);
     }

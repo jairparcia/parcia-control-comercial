@@ -13,20 +13,44 @@ class HandleGoogleCallbackService
         private readonly UserRepository $users,
     ) {}
 
-    public function execute(GoogleCallbackInput $input): AuthenticatedUserResult
+    private function resolveRole(string $email, ?string $existingRole): string
     {
-        $existing = $this->users->findByGoogleId($input->googleId);
+        // Existing users keep their role — it may have been promoted manually via admin.
+        if ($existingRole !== null) {
+            return $existingRole;
+        }
 
-        $user = $this->users->findOrCreateByGoogle($input);
+        return str_ends_with($email, '@parcia.co') ? 'internal' : 'external';
+    }
+
+    public function execute(
+        string $googleId,
+        string $name,
+        string $email,
+        ?string $avatar,
+    ): AuthenticatedUserResult {
+        $existing = $this->users->findByGoogleId($googleId);
+
+        $role = $this->resolveRole($email, $existing?->role);
+
+        $input = new GoogleCallbackInput(
+            googleId: $googleId,
+            name:     $name,
+            email:    $email,
+            avatar:   $avatar,
+        );
+
+        $user = $this->users->findOrCreateByGoogle($input, $role);
 
         Auth::login($user);
 
         return new AuthenticatedUserResult(
-            userId: $user->id,
-            name: $user->name,
-            email: $user->email,
-            role: $user->role,
-            isNew: $existing === null,
+            userId:       $user->id,
+            name:         $user->name,
+            email:        $user->email,
+            role:         $user->role,
+            isNew:        $existing === null,
+            hasOnboarded: $user->hasOnboarded(),
         );
     }
 }
