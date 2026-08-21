@@ -1,6 +1,6 @@
 <?php
 
-use App\Domain\Auth\Entities\GoogleCallbackInput;
+use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Infrastructure\Repository\Auth\EloquentUserRepository;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,14 +14,14 @@ beforeEach(function () {
 // ── findOrCreateByGoogle ──────────────────────────────────────────────────
 
 it('creates a new user with external role on first google login', function () {
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-123',
         name:     'Carlos Molina',
         email:    'carlos@example.com',
         avatar:   null,
     );
 
-    $user = $this->repo->findOrCreateByGoogle($input);
+    $user = $this->repo->findOrCreateByGoogle($input, 'external');
 
     expect($user->google_id)->toBe('google-123')
         ->and($user->role)->toBe('external')
@@ -30,17 +30,31 @@ it('creates a new user with external role on first google login', function () {
     $this->assertDatabaseHas('users', ['google_id' => 'google-123', 'role' => 'external']);
 });
 
+it('creates a new user with internal role for parcia.co email', function () {
+    $input = new GoogleCallbackInputDTO(
+        googleId: 'google-parcia',
+        name:     'Parcia Member',
+        email:    'member@parcia.co',
+        avatar:   null,
+    );
+
+    $user = $this->repo->findOrCreateByGoogle($input, 'internal');
+
+    expect($user->role)->toBe('internal');
+    $this->assertDatabaseHas('users', ['google_id' => 'google-parcia', 'role' => 'internal']);
+});
+
 it('updates existing user data on subsequent google logins', function () {
     User::factory()->create(['google_id' => 'google-123', 'name' => 'Nombre Viejo']);
 
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-123',
         name:     'Nombre Nuevo',
         email:    'nuevo@example.com',
         avatar:   null,
     );
 
-    $this->repo->findOrCreateByGoogle($input);
+    $this->repo->findOrCreateByGoogle($input, 'external');
 
     $this->assertDatabaseHas('users', ['google_id' => 'google-123', 'name' => 'Nombre Nuevo']);
     $this->assertDatabaseCount('users', 1);
@@ -49,17 +63,17 @@ it('updates existing user data on subsequent google logins', function () {
 it('does not override role when updating existing user', function () {
     User::factory()->internal()->create(['google_id' => 'google-internal']);
 
-    $input = new GoogleCallbackInput(
+    $input = new GoogleCallbackInputDTO(
         googleId: 'google-internal',
         name:     'Parcia Team',
         email:    'team@parcia.co',
         avatar:   null,
     );
 
-    $user = $this->repo->findOrCreateByGoogle($input);
+    // Service passes back the existing role — repo just persists it.
+    $user = $this->repo->findOrCreateByGoogle($input, 'internal');
 
-    // role is always set to 'external' on update — internal role is managed via seeder/admin
-    expect($user->fresh()->role)->toBe('external');
+    expect($user->fresh()->role)->toBe('internal');
 });
 
 // ── markOnboarded ─────────────────────────────────────────────────────────

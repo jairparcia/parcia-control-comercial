@@ -28,46 +28,45 @@ class AdminSidebar extends Component
 
         $navItems = [
             [
-                'key'   => 'dashboard',
-                'label' => 'Dashboard',
-                'route' => route('dashboard'),
-                'icon'  => 'home',
+                'key'      => 'dashboard',
+                'label'    => 'Dashboard',
+                'route'    => route('dashboard'),
+                'icon'     => 'home',
+                'isActive' => $this->active === 'dashboard',
             ],
             [
-                'key'   => 'creators',
-                'label' => 'Mis Creadores',
-                'route' => '#',
-                'icon'  => 'creators',
+                'key'      => 'creators',
+                'label'    => 'Mis Creadores',
+                'route'    => '#',
+                'icon'     => 'creators',
+                'isActive' => $this->active === 'creators',
             ],
             [
-                'key'   => 'billing',
-                'label' => 'Facturación',
-                'route' => route('billing'),
-                'icon'  => 'billing',
+                'key'      => 'billing',
+                'label'    => 'Facturación',
+                'route'    => route('billing'),
+                'icon'     => 'billing',
+                'isActive' => $this->active === 'billing',
             ],
             [
-                'key'   => 'settings',
-                'label' => 'Configuración',
-                'route' => '#',
-                'icon'  => 'settings',
+                'key'      => 'settings',
+                'label'    => 'Configuración',
+                'route'    => '#',
+                'icon'     => 'settings',
+                'isActive' => $this->active === 'settings',
             ],
         ];
 
-        if ($user && $user->role === 'internal') {
-            $navItems[] = [
-                'key'   => 'admin',
-                'label' => 'Admin',
-                'route' => '#',
-                'icon'  => 'admin',
-            ];
-        }
-
         $status = $this->statusService->execute($user->id);
+        $name   = $user?->name ?? 'Usuario';
 
         return view('livewire.layout.admin-sidebar', [
-            'items'    => $navItems,
-            'userName' => $user?->name ?? 'Usuario',
-            'userPlan' => $user?->isInternal()
+            'items'         => $navItems,
+            'adminRoute'    => ($user && $user->role === 'internal') ? route('admin.plans') : null,
+            'isAdminActive' => $this->active === 'admin',
+            'userName'      => $name,
+            'userInitials'  => strtoupper(mb_substr($name, 0, 2)),
+            'userPlan'      => $user?->isInternal()
                 ? 'Equipo Parcia'
                 : 'Plan ' . ($status->plan?->label() ?? 'Gratuito'),
         ]);

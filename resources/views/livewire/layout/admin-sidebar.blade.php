@@ -65,8 +65,6 @@
         {{-- NAV --}}
         <nav class="flex flex-col gap-[3px]">
             @foreach ($items as $item)
-                @php $isActive = $active === $item['key']; @endphp
-
                 <a
                     href="{{ $item['route'] }}"
                     aria-label="{{ $item['label'] }}"
@@ -76,7 +74,7 @@
                         text-[#353636] text-[12.5px] font-normal
                         transition-colors duration-150 no-underline
                         {{ $collapsed ? 'justify-center px-0 overflow-visible' : 'gap-3 px-3 overflow-hidden' }}
-                        {{ $isActive ? 'bg-[#efefef]' : 'bg-transparent hover:bg-[#f3f3f3]' }}
+                        {{ $item['isActive'] ? 'bg-[#efefef]' : 'bg-transparent hover:bg-[#f3f3f3]' }}
                     "
                 >
                     {{-- Icon --}}
@@ -134,23 +132,77 @@
         </nav>
     </div>
 
-    {{-- FOOTER USUARIO --}}
-    <div class="pt-3 border-t border-[#eaeaea] shrink-0">
-        <div class="flex items-center {{ $collapsed ? 'justify-center' : 'gap-[10px]' }} min-w-0">
-            <div class="w-[38px] h-[38px] rounded-[10px] bg-[#e9dfcf] text-[#5c4a36] flex items-center justify-center text-[13px] font-semibold shrink-0">
-                {{ strtoupper(mb_substr($userName, 0, 2)) }}
-            </div>
+    {{-- BOTTOM: Admin + Usuario --}}
+    <div class="shrink-0 flex flex-col gap-0">
 
-            @unless($collapsed)
-                <div class="min-w-0">
-                    <p class="text-[12px] font-semibold leading-[1.3] text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
-                        {{ $userName }}
-                    </p>
-                    <p class="text-[11px] font-light leading-[1.3] text-[#7c7c86] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis">
-                        {{ $userPlan }}
-                    </p>
+        {{-- Admin link (internal only) --}}
+        @if($adminRoute)
+            <div class="pb-2">
+                <a
+                    href="{{ $adminRoute }}"
+                    wire:navigate
+                    aria-label="Admin"
+                    class="
+                        group relative flex items-center h-11 rounded-md
+                        text-[#353636] text-[12.5px] font-normal
+                        transition-colors duration-150 no-underline
+                        {{ $collapsed ? 'justify-center px-0 overflow-visible' : 'gap-3 px-3 overflow-hidden' }}
+                        {{ $isAdminActive ? 'bg-[#efefef]' : 'bg-transparent hover:bg-[#f3f3f3]' }}
+                    "
+                >
+                    <span class="shrink-0 flex items-center justify-center w-[20px] h-[20px] transition-transform duration-200 group-hover:-translate-y-[2px]">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </span>
+                    @unless($collapsed)
+                        <span class="text-[12.5px] font-normal leading-none text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                            Admin
+                        </span>
+                    @endunless
+                    @if($collapsed)
+                        <span class="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 z-[999] inline-flex items-center rounded-lg bg-[#2c2c2c] px-3 py-2 text-[12px] font-normal leading-none text-white whitespace-nowrap shadow-[0_4px_14px_rgba(0,0,0,0.25)] opacity-0 invisible transition-all duration-150 group-hover:opacity-100 group-hover:visible">
+                            Admin
+                        </span>
+                    @endif
+                </a>
+            </div>
+        @endif
+
+        {{-- FOOTER USUARIO --}}
+        <div class="pt-3 border-t border-[#eaeaea]">
+            <div class="flex items-center {{ $collapsed ? 'justify-center' : 'gap-[10px]' }} min-w-0">
+                <div class="w-[38px] h-[38px] rounded-[10px] bg-[#e9dfcf] text-[#5c4a36] flex items-center justify-center text-[13px] font-semibold shrink-0">
+                    {{ $userInitials }}
                 </div>
-            @endunless
+
+                @unless($collapsed)
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[12px] font-semibold leading-[1.3] text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                            {{ $userName }}
+                        </p>
+                        <p class="text-[11px] font-light leading-[1.3] text-[#7c7c86] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis">
+                            {{ $userPlan }}
+                        </p>
+                    </div>
+
+                    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                        @csrf
+                        <button
+                            type="submit"
+                            title="Cerrar sesión"
+                            class="w-[28px] h-[28px] rounded-[7px] flex items-center justify-center text-[#7c7c86] hover:text-[#353636] hover:bg-[#eaeaea] transition-colors duration-150"
+                        >
+                            <svg class="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                        </button>
+                    </form>
+                @endunless
+            </div>
         </div>
+
     </div>
 </aside>

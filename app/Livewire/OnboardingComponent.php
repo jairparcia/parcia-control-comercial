@@ -4,26 +4,27 @@ namespace App\Livewire;
 
 use App\Application\Subscription\CreateCheckoutSessionService;
 use App\Application\Subscription\GetAvailablePlansService;
-use App\Domain\Auth\Contracts\UserRepository;
-use App\Domain\Subscription\Entities\CreateCheckoutSessionInput;
-use App\Domain\Subscription\Enums\Plan;
-use App\Domain\Subscription\Results\PlanInfo;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
+use App\Http\Presenters\Onboarding\OnboardingPresenter;
 use Livewire\Component;
 
 class OnboardingComponent extends Component
 {
     private GetAvailablePlansService $plansService;
     private CreateCheckoutSessionService $checkoutService;
-    private UserRepository $users;
+    private UserRepositoryInterface $users;
+    private OnboardingPresenter $presenter;
 
     public function boot(
         GetAvailablePlansService $plansService,
         CreateCheckoutSessionService $checkoutService,
-        UserRepository $users,
+        UserRepositoryInterface $users,
+        OnboardingPresenter $presenter,
     ): void {
         $this->plansService    = $plansService;
         $this->checkoutService = $checkoutService;
         $this->users           = $users;
+        $this->presenter       = $presenter;
     }
 
     public function startFree(): void
@@ -34,32 +35,24 @@ class OnboardingComponent extends Component
 
     public function choosePlan(string $key): void
     {
-        $plan = Plan::from($key);
-
-        $input = new CreateCheckoutSessionInput(
+        $result = $this->checkoutService->execute(
             userId:     auth()->id(),
-            plan:       $plan,
+            planKey:    $key,
             successUrl: route('dashboard'),
             cancelUrl:  route('onboarding'),
         );
 
-        $result = $this->checkoutService->execute($input);
-
-        $this->redirect($result->checkoutUrl);
+        $this->redirect($result->checkoutUrl, navigate: false);
     }
 
     public function render()
     {
-        $freePlan = new PlanInfo(
-            key: 'free',
-            name: 'Gratuito',
-            formattedPrice: 'MX$0',
-            interval: 'month',
-            currency: 'MXN',
-        );
+        $rawPlans = $this->plansService->execute();
 
-        $plans = [$freePlan, ...$this->plansService->execute()];
-
-        return view('livewire.onboarding-component', compact('plans'));
+        return view('livewire.onboarding-component', [
+            'plans'     => $this->presenter->presentPlans($rawPlans),
+            'planCount' => $this->presenter->planCount($rawPlans),
+            'userName'  => $this->presenter->userName(),
+        ]);
     }
 }

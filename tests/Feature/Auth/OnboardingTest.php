@@ -67,21 +67,20 @@ it('choosePlan throws exception for invalid plan key', function () {
     Livewire::actingAs($user)
         ->test(\App\Livewire\OnboardingComponent::class)
         ->call('choosePlan', 'invalid_plan');
-})->throws(\ValueError::class);
+})->throws(\RuntimeException::class);
 
 // ── Helper ─────────────────────────────────────────────────────────────────
 
 function mockAvailablePlans(): void
 {
-    \Illuminate\Support\Facades\Cache::forget('billing.available_plans');
-
     app()->instance(GetAvailablePlansService::class, new class extends GetAvailablePlansService {
         public function __construct() {}
         public function execute(): array
         {
             return [
-                new PlanInfo(key: 'starter', name: 'Starter', formattedPrice: 'MX$100', interval: 'month', currency: 'MXN'),
-                new PlanInfo(key: 'pro',     name: 'Pro',     formattedPrice: 'MX$250', interval: 'month', currency: 'MXN'),
+                new PlanInfo(key: 'free',    name: 'Gratuito', formattedPrice: 'Gratis',  interval: 'month', currency: 'MXN', quota: 10),
+                new PlanInfo(key: 'starter', name: 'Starter',  formattedPrice: 'MX$100', interval: 'month', currency: 'MXN', quota: 500),
+                new PlanInfo(key: 'pro',     name: 'Pro',      formattedPrice: 'MX$250', interval: 'month', currency: 'MXN', quota: 2000),
             ];
         }
     });

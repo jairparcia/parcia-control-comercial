@@ -10,7 +10,7 @@ Route::get('/', function () {
         : redirect()->route('login');
 })->name('home');
 
-// DEV ONLY — remove before deploy
+// Dev-only route — remove before deploy
 if (app()->isLocal()) {
     Route::get('dashboard-dummy', function () {
         return view('dev.dashboard-dummy');
@@ -27,7 +27,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('billing/portal', BillingPortalController::class)->name('billing.portal');
 });
 
-// Stripe webhooks — sin middleware auth, firmados por Stripe
+// Admin — internal users only (enforced in backend middleware, not just UI)
+Route::middleware(['auth', 'requires.internal'])->prefix('admin')->name('admin.')->group(function () {
+    Route::view('plans', 'admin.plans')->name('plans');
+    Route::view('subscriptions', 'admin.subscriptions')->name('subscriptions');
+});
+
+// Stripe webhooks — no auth middleware, verified by Stripe signature
 Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])->name('stripe.webhook');
 
 require __DIR__.'/auth.php';
