@@ -18,5 +18,6 @@ readonly class AdminSubscriptionViewModel
         public string  $formattedAnnualAverage,
         public string  $subscribedAt,
         public ?string $endsAt,
+        public ?string $canceledAt,
     ) {}
 }

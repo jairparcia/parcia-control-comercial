@@ -12,8 +12,8 @@ class ListAdminSubscriptionsService
     ) {}
 
     /** @return AdminSubscriptionResult[] */
-    public function execute(): array
+    public function execute(string $statusFilter = 'active'): array
     {
-        return $this->repository->all();
+        return $this->repository->all($statusFilter);
     }
 }

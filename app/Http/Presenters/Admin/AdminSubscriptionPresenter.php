@@ -3,6 +3,7 @@
 namespace App\Http\Presenters\Admin;
 
 use App\Domain\Admin\Results\AdminSubscriptionResult;
+use App\Domain\Admin\Results\SubscriptionCancellationInfoResult;
 use Carbon\Carbon;
 
 class AdminSubscriptionPresenter
@@ -28,7 +29,8 @@ class AdminSubscriptionPresenter
             formattedMonthlyAverage: $this->formatAmount($this->monthlyAmount($sub), $sub->currency),
             formattedAnnualAverage:  $this->formatAmount($this->annualAmount($sub), $sub->currency),
             subscribedAt:            $this->formatDate($sub->subscribedAt),
-            endsAt:                  $sub->endsAt ? $this->formatDate($sub->endsAt) : null,
+            endsAt:                  $sub->endsAt && $sub->status !== 'canceled' ? $this->formatDate($sub->endsAt) : null,
+            canceledAt:              $sub->status === 'canceled' && $sub->endsAt ? $this->formatDate($sub->endsAt) : null,
         );
     }
 
@@ -96,6 +98,17 @@ class AdminSubscriptionPresenter
         return $sub->interval === 'year'
             ? $sub->unitAmount
             : $sub->unitAmount * 12;
+    }
+
+    public function presentCancellationInfo(SubscriptionCancellationInfoResult $info): SubscriptionCancellationInfoViewModel
+    {
+        return new SubscriptionCancellationInfoViewModel(
+            stripeSubscriptionId:    $info->stripeSubscriptionId,
+            periodEndFormatted:      $this->formatDate($info->periodEnd),
+            lastPaymentFormatted:    $this->formatAmount($info->lastPaymentAmount, $info->lastPaymentCurrency),
+            proratedAmountFormatted: $this->formatAmount($info->proratedAmount, $info->lastPaymentCurrency),
+            proratedDays:            $info->proratedDays,
+        );
     }
 
     private function formatDate(\DateTimeImmutable $date): string

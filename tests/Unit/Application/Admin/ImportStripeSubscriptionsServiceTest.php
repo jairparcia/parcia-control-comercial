@@ -11,6 +11,8 @@ function makeProviderData(array $overrides = []): ProviderSubscriptionDataDTO
     return new ProviderSubscriptionDataDTO(
         providerSubscriptionId: $overrides['providerSubscriptionId'] ?? 'sub_STRIPE_1',
         providerCustomerId:     $overrides['providerCustomerId']     ?? 'cus_CUSTOMER_1',
+        customerEmail:          $overrides['customerEmail']          ?? 'test@example.com',
+        customerName:           $overrides['customerName']           ?? 'Test User',
         status:                 $overrides['status']                 ?? 'active',
         priceId:                $overrides['priceId']                ?? 'price_STARTER',
         type:                   $overrides['type']                   ?? 'default',

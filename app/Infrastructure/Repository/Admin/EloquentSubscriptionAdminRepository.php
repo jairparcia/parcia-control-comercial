@@ -10,10 +10,11 @@ use App\Models\User;
 
 class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepositoryInterface
 {
-    public function all(): array
+    public function all(string $statusFilter = 'active'): array
     {
         return Subscription::query()
             ->with(['user', 'plan'])
+            ->when($statusFilter !== 'all', fn ($q) => $q->where('stripe_status', $statusFilter))
             ->orderByDesc('created_at')
             ->get()
             ->map(fn (Subscription $sub) => $this->toResult($sub))
@@ -25,7 +26,7 @@ class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepository
         $inserted = 0;
 
         foreach ($subscriptions as $sub) {
-            $user = User::where('stripe_id', $sub->providerCustomerId)->first();
+            $user = $this->resolveUser($sub);
 
             if (! $user) {
                 continue;
@@ -47,6 +48,49 @@ class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepository
         }
 
         return $inserted;
+    }
+
+    public function markCanceled(string $stripeSubscriptionId): void
+    {
+        Subscription::where('stripe_id', $stripeSubscriptionId)
+            ->update([
+                'stripe_status' => 'canceled',
+                'ends_at'       => now(),
+            ]);
+    }
+
+    public function markScheduledCancellation(string $stripeSubscriptionId, \DateTimeImmutable $endsAt): void
+    {
+        Subscription::where('stripe_id', $stripeSubscriptionId)
+            ->update(['ends_at' => $endsAt->format('Y-m-d H:i:s')]);
+    }
+
+    private function resolveUser(ProviderSubscriptionDataDTO $sub): ?User
+    {
+        $user = User::where('stripe_id', $sub->providerCustomerId)->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        if (! $sub->customerEmail) {
+            return null;
+        }
+
+        $user = User::where('email', $sub->customerEmail)->first();
+
+        if ($user) {
+            $user->update(['stripe_id' => $sub->providerCustomerId]);
+
+            return $user;
+        }
+
+        return User::create([
+            'name'      => $sub->customerName ?? $sub->customerEmail,
+            'email'     => $sub->customerEmail,
+            'stripe_id' => $sub->providerCustomerId,
+            'role'      => 'external',
+        ]);
     }
 
     private function toResult(Subscription $sub): AdminSubscriptionResult
