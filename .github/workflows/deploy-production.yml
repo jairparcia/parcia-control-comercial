@@ -1,0 +1,48 @@
+name: Parcia Plugin Admin Production Deploy
+on:
+  push:
+    branches:
+      - production
+jobs:
+  andria-laravel-staging-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build dist folder
+        run: |
+          mkdir -p dist
+          rsync -r --exclude 'dist' --exclude '.git' --exclude '.github' --exclude '.gitignore' . dist
+
+      - name: Deploy with rsync
+        env:
+          remote_host: ${{ secrets.CLOUDWAYS_HOST }}
+          remote_port: "22"
+          remote_user: ${{ secrets.CLOUDWAYS_USER }}
+          remote_key: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          local_dir: "dist/"
+          remote_dir: ${{ secrets.CLOUDWAYS_PATH_PROD }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          echo "$remote_key" > ~/.ssh/gh_actions_key
+          chmod 600 ~/.ssh/gh_actions_key
+          rsync -rltgoDv -O -e "ssh -p ${remote_port} -i ~/.ssh/gh_actions_key -o StrictHostKeyChecking=no" ${local_dir} ${remote_user}@${remote_host}:${remote_dir}/
+
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CLOUDWAYS_HOST }}
+          username: ${{ secrets.CLOUDWAYS_USER }}
+          key: ${{ secrets.CLOUDWAYS_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ${{ secrets.CLOUDWAYS_PATH_PROD }}
+            composer install
+            npm install
+            npm run build
+            php artisan migrate --force

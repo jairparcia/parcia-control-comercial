@@ -24,8 +24,10 @@ class GoogleCallbackController extends Controller
             avatar:   $googleUser->getAvatar(),
         );
 
-        $this->service->execute($input);
+        $result = $this->service->execute($input);
 
-        return redirect()->route('dashboard');
+        return $result->isNew
+            ? redirect()->route('onboarding')
+            : redirect()->route('dashboard');
     }
 }

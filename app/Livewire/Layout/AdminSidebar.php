@@ -2,12 +2,20 @@
 
 namespace App\Livewire\Layout;
 
+use App\Application\Subscription\GetSubscriptionStatusService;
 use Livewire\Component;
 
 class AdminSidebar extends Component
 {
     public bool $collapsed = false;
     public string $active = 'dashboard';
+
+    private GetSubscriptionStatusService $statusService;
+
+    public function boot(GetSubscriptionStatusService $statusService): void
+    {
+        $this->statusService = $statusService;
+    }
 
     public function toggle(): void
     {
@@ -34,7 +42,7 @@ class AdminSidebar extends Component
             [
                 'key'   => 'billing',
                 'label' => 'Facturación',
-                'route' => '#',
+                'route' => route('billing'),
                 'icon'  => 'billing',
             ],
             [
@@ -54,10 +62,14 @@ class AdminSidebar extends Component
             ];
         }
 
+        $status = $this->statusService->execute($user->id);
+
         return view('livewire.layout.admin-sidebar', [
             'items'    => $navItems,
             'userName' => $user?->name ?? 'Usuario',
-            'userPlan' => $user?->role === 'internal' ? 'Equipo Parcia' : 'Plan Starter',
+            'userPlan' => $user?->isInternal()
+                ? 'Equipo Parcia'
+                : 'Plan ' . ($status->plan?->label() ?? 'Gratuito'),
         ]);
     }
 }
