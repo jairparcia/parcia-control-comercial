@@ -4,14 +4,14 @@ namespace App\Application\Admin;
 
 use App\Domain\Admin\Contracts\CustomerAdminRepositoryInterface;
 
-class ListCustomersService
+class RestoreCustomerService
 {
     public function __construct(
         private readonly CustomerAdminRepositoryInterface $customers,
     ) {}
 
-    public function execute(string $statusFilter = 'all'): array
+    public function execute(int $userId): void
     {
-        return $this->customers->all($statusFilter);
+        $this->customers->restore($userId);
     }
 }

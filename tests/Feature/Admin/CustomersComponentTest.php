@@ -1,161 +1,227 @@
 <?php
 
-use App\Application\Admin\ImportStripeCustomersService;
-use App\Application\Admin\ListCustomersService;
-use App\Domain\Admin\Results\AdminCustomerResult;
 use App\Livewire\Admin\CustomersComponent;
+use App\Models\Subscription;
 use App\Models\User;
 use Livewire\Livewire;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function makeComponentCustomerResult(array $overrides = []): AdminCustomerResult
+// Creates an active Subscription row for the given user (no stripe_id on user,
+// so GetCustomerDetailService will not call the Stripe gateway).
+function activeSubscriptionFor(User $user, string $status = 'active'): void
 {
-    return new AdminCustomerResult(
-        id:          $overrides['id']          ?? 1,
-        name:        $overrides['name']        ?? 'Jane Doe',
-        email:       $overrides['email']       ?? 'jane@example.com',
-        description: $overrides['description'] ?? null,
-        country:     $overrides['country']     ?? null,
-        createdAt:   $overrides['createdAt']   ?? new \DateTimeImmutable('2025-01-15'),
-    );
+    Subscription::create([
+        'user_id'       => $user->id,
+        'type'          => 'default',
+        'stripe_id'     => 'sub_' . uniqid(),
+        'stripe_status' => $status,
+        'stripe_price'  => 'price_test',
+        'quantity'      => 1,
+    ]);
 }
 
-// ── Access control ────────────────────────────────────────────────────────────
+// --- Access control ---
 
-it('redirects unauthenticated users to login', function () {
-    $this->get(route('admin.customers'))->assertRedirect(route('login'));
+it('redirects guests away from the admin customers page', function () {
+    $this->get(route('admin.customers'))->assertRedirect('/login');
 });
 
-it('returns 403 for authenticated external users', function () {
-    $this->actingAs(User::factory()->create(['role' => 'external']))
+it('forbids external users from the admin customers page', function () {
+    $this->actingAs(User::factory()->create())
         ->get(route('admin.customers'))
         ->assertForbidden();
 });
 
-it('renders the customers page for internal users', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([]);
-
+it('allows internal users to view the admin customers page', function () {
     $this->actingAs(User::factory()->internal()->create())
         ->get(route('admin.customers'))
         ->assertOk();
 });
 
-// ── Rendering ─────────────────────────────────────────────────────────────────
+// --- Panel: open ---
 
-it('renders customer name and email in the table', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([makeComponentCustomerResult(['name' => 'Maria Garcia', 'email' => 'maria@example.com'])]);
+it('loads the customer data into the panel on openPanel', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create(['name' => 'Jane Doe', 'email' => 'jane@example.com']);
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSee('Maria Garcia')
-        ->assertSee('maria@example.com');
+        ->call('openPanel', $customer->id)
+        ->assertSet('panelOpen', true)
+        ->assertSet('panelName', 'Jane Doe')
+        ->assertSet('panelEmail', 'jane@example.com')
+        ->assertSet('selectedId', $customer->id);
 });
 
-it('renders description when present', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([makeComponentCustomerResult(['description' => 'Enterprise account'])]);
+it('marks hasSub false when the customer has no subscription', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSee('Enterprise account');
+        ->call('openPanel', $customer->id)
+        ->assertSet('hasSub', false);
 });
 
-it('renders country when present', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([makeComponentCustomerResult(['country' => 'MX'])]);
+it('marks hasSub true when the customer has an active subscription', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+    activeSubscriptionFor($customer);
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSee('MX');
+        ->call('openPanel', $customer->id)
+        ->assertSet('hasSub', true);
 });
 
-it('shows the empty state when there are no customers', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([]);
+// --- Archive: no active subscription → archives immediately ---
 
-    Livewire::actingAs(User::factory()->internal()->create())
+it('archives a customer without an active subscription immediately', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSee('No customers yet');
+        ->call('openPanel', $customer->id)
+        ->call('archiveCustomer')
+        ->assertSet('archiveModalOpen', false)
+        ->assertSet('panelOpen', false);
+
+    expect(User::find($customer->id)->archived)->toBeTrue();
 });
 
-it('renders multiple customers', function () {
-    $this->mock(ListCustomersService::class)
-        ->shouldReceive('execute')
-        ->andReturn([
-            makeComponentCustomerResult(['id' => 1, 'name' => 'Alice']),
-            makeComponentCustomerResult(['id' => 2, 'name' => 'Bob']),
-        ]);
+// --- Archive: with active subscription → confirmation modal ---
 
-    Livewire::actingAs(User::factory()->internal()->create())
+it('shows the confirmation modal when archiving a customer with an active subscription', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+    activeSubscriptionFor($customer);
+
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSee('Alice')
-        ->assertSee('Bob');
+        ->call('openPanel', $customer->id)
+        ->call('archiveCustomer')
+        ->assertSet('archiveModalOpen', true);
+
+    expect(User::find($customer->id)->archived)->toBeFalse();
 });
 
-// ── Import action ─────────────────────────────────────────────────────────────
+it('does not archive the customer when the modal is opened', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+    activeSubscriptionFor($customer);
 
-it('dispatches a success toast when new customers are imported', function () {
-    $this->mock(ListCustomersService::class)->shouldReceive('execute')->andReturn([]);
-    $this->mock(ImportStripeCustomersService::class)->shouldReceive('execute')->andReturn(3);
-
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->call('import')
-        ->assertDispatched('toast')
-        ->assertSet('importing', false);
+        ->call('openPanel', $customer->id)
+        ->call('archiveCustomer'); // opens modal, does NOT archive
+
+    expect(User::find($customer->id)->archived)->toBeFalse();
 });
 
-it('dispatches an info toast when no new customers are found', function () {
-    $this->mock(ListCustomersService::class)->shouldReceive('execute')->andReturn([]);
-    $this->mock(ImportStripeCustomersService::class)->shouldReceive('execute')->andReturn(0);
+it('archives after confirmArchive is called', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+    activeSubscriptionFor($customer);
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->call('import')
-        ->assertDispatched('toast')
-        ->assertSet('importing', false);
+        ->call('openPanel', $customer->id)
+        ->call('archiveCustomer')     // opens modal
+        ->call('confirmArchive')      // actually archives
+        ->assertSet('panelOpen', false);
+
+    expect(User::find($customer->id)->archived)->toBeTrue();
 });
 
-it('dispatches an error toast when the import service throws', function () {
-    $this->mock(ListCustomersService::class)->shouldReceive('execute')->andReturn([]);
-    $this->mock(ImportStripeCustomersService::class)
-        ->shouldReceive('execute')
-        ->andThrow(new RuntimeException('Connection refused'));
+it('closes the modal without archiving on closeArchiveModal', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create();
+    activeSubscriptionFor($customer);
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->call('import')
-        ->assertDispatched('toast')
-        ->assertSet('importing', false);
+        ->call('openPanel', $customer->id)
+        ->call('archiveCustomer')
+        ->call('closeArchiveModal')
+        ->assertSet('archiveModalOpen', false);
+
+    expect(User::find($customer->id)->archived)->toBeFalse();
 });
 
-it('resets the importing flag to false after a successful import', function () {
-    $this->mock(ListCustomersService::class)->shouldReceive('execute')->andReturn([]);
-    $this->mock(ImportStripeCustomersService::class)->shouldReceive('execute')->andReturn(1);
+// --- Restore ---
 
-    Livewire::actingAs(User::factory()->internal()->create())
+it('restores an archived customer and closes the panel', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create(['archived' => true]);
+
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->assertSet('importing', false)
-        ->call('import')
-        ->assertSet('importing', false);
+        ->call('openPanel', $customer->id)
+        ->call('restoreCustomer')
+        ->assertSet('panelOpen', false);
+
+    expect(User::find($customer->id)->archived)->toBeFalse();
 });
 
-it('resets the importing flag to false even when the import fails', function () {
-    $this->mock(ListCustomersService::class)->shouldReceive('execute')->andReturn([]);
-    $this->mock(ImportStripeCustomersService::class)
-        ->shouldReceive('execute')
-        ->andThrow(new RuntimeException('Timeout'));
+it('marks panelArchived correctly when opening an archived customer', function () {
+    $admin    = User::factory()->internal()->create();
+    $customer = User::factory()->create(['archived' => true]);
 
-    Livewire::actingAs(User::factory()->internal()->create())
+    Livewire::actingAs($admin)
         ->test(CustomersComponent::class)
-        ->call('import')
-        ->assertSet('importing', false);
+        ->call('openPanel', $customer->id)
+        ->assertSet('panelArchived', true);
+});
+
+// --- Status filter ---
+
+it('defaults to the active status filter on mount', function () {
+    $admin = User::factory()->internal()->create();
+
+    Livewire::actingAs($admin)
+        ->test(CustomersComponent::class)
+        ->assertSet('statusFilter', 'active');
+});
+
+it('only shows active customers by default', function () {
+    $admin    = User::factory()->internal()->create();
+    $active   = User::factory()->create(['name' => 'Active User']);
+    $inactive = User::factory()->create(['name' => 'Inactive User']);
+    $archived = User::factory()->create(['name' => 'Archived User', 'archived' => true]);
+
+    activeSubscriptionFor($active);
+
+    Livewire::actingAs($admin)
+        ->test(CustomersComponent::class)
+        ->assertSee('Active User')
+        ->assertDontSee('Inactive User')
+        ->assertDontSee('Archived User');
+});
+
+it('shows archived customers when the archived filter is selected', function () {
+    $admin    = User::factory()->internal()->create();
+    $active   = User::factory()->create(['name' => 'Active User']);
+    $archived = User::factory()->create(['name' => 'Archived User', 'archived' => true]);
+
+    activeSubscriptionFor($active);
+
+    Livewire::actingAs($admin)
+        ->test(CustomersComponent::class)
+        ->set('statusFilter', 'archived')
+        ->assertSee('Archived User')
+        ->assertDontSee('Active User');
+});
+
+it('shows all customers including archived when all filter is selected', function () {
+    $admin    = User::factory()->internal()->create();
+    $active   = User::factory()->create(['name' => 'Active User']);
+    $archived = User::factory()->create(['name' => 'Archived User', 'archived' => true]);
+
+    activeSubscriptionFor($active);
+
+    Livewire::actingAs($admin)
+        ->test(CustomersComponent::class)
+        ->set('statusFilter', 'all')
+        ->assertSee('Active User')
+        ->assertSee('Archived User');
 });

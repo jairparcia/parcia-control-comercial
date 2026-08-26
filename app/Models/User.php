@@ -19,6 +19,7 @@ class User extends Authenticatable
         'role',
         'description',
         'country',
+        'archived',
         'webhook_url',
         'onboarded_at',
     ];
@@ -33,6 +34,7 @@ class User extends Authenticatable
             'created_at'   => 'datetime',
             'updated_at'   => 'datetime',
             'onboarded_at' => 'datetime',
+            'archived'     => 'boolean',
         ];
     }
 

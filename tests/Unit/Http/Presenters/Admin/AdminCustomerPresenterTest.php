@@ -9,12 +9,14 @@ use App\Http\Presenters\Admin\AdminCustomerViewModel;
 function makeCustomerPresenterResult(array $overrides = []): AdminCustomerResult
 {
     return new AdminCustomerResult(
-        id:          $overrides['id']          ?? 1,
-        name:        $overrides['name']        ?? 'Jane Doe',
-        email:       $overrides['email']       ?? 'jane@example.com',
-        description: array_key_exists('description', $overrides) ? $overrides['description'] : 'Agency client',
-        country:     array_key_exists('country', $overrides)     ? $overrides['country']     : 'MX',
-        createdAt:   $overrides['createdAt']   ?? new \DateTimeImmutable('2025-03-01'),
+        id:           $overrides['id']          ?? 1,
+        name:         $overrides['name']        ?? 'Jane Doe',
+        email:        $overrides['email']       ?? 'jane@example.com',
+        description:  array_key_exists('description', $overrides) ? $overrides['description'] : 'Agency client',
+        country:      array_key_exists('country', $overrides)     ? $overrides['country']     : 'MX',
+        archived:     $overrides['archived']    ?? false,
+        hasActiveSub: $overrides['hasActiveSub'] ?? false,
+        createdAt:    $overrides['createdAt']   ?? new \DateTimeImmutable('2025-03-01'),
     );
 }
 

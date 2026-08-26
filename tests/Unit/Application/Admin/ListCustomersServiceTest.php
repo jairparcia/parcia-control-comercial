@@ -9,12 +9,14 @@ use App\Domain\Admin\Results\AdminCustomerResult;
 function makeCustomerResult(array $overrides = []): AdminCustomerResult
 {
     return new AdminCustomerResult(
-        id:          $overrides['id']          ?? 1,
-        name:        $overrides['name']        ?? 'Jane Doe',
-        email:       $overrides['email']       ?? 'jane@example.com',
-        description: $overrides['description'] ?? null,
-        country:     $overrides['country']     ?? null,
-        createdAt:   $overrides['createdAt']   ?? new \DateTimeImmutable('2025-01-15'),
+        id:           $overrides['id']          ?? 1,
+        name:         $overrides['name']        ?? 'Jane Doe',
+        email:        $overrides['email']       ?? 'jane@example.com',
+        description:  $overrides['description'] ?? null,
+        country:      $overrides['country']     ?? null,
+        archived:     $overrides['archived']    ?? false,
+        hasActiveSub: $overrides['hasActiveSub'] ?? false,
+        createdAt:    $overrides['createdAt']   ?? new \DateTimeImmutable('2025-01-15'),
     );
 }
 
