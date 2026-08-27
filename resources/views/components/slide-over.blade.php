@@ -57,6 +57,13 @@
             <div class="flex-1 overflow-y-auto divide-y divide-[#27272a]">
                 {{ $slot }}
             </div>
+
+            {{-- Footer (optional sticky bottom actions) --}}
+            @isset($footer)
+                <div class="shrink-0 border-t border-[#27272a]">
+                    {{ $footer }}
+                </div>
+            @endisset
         </div>
     </div>
 </template>
