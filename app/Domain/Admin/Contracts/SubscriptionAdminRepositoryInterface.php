@@ -12,6 +12,8 @@ interface SubscriptionAdminRepositoryInterface
 
     public function findByUserId(int $userId): ?AdminSubscriptionResult;
 
+    public function findByStripeId(string $stripeId): ?AdminSubscriptionResult;
+
     /** @param ProviderSubscriptionDataDTO[] $subscriptions */
     public function insertMissing(array $subscriptions): int;
 

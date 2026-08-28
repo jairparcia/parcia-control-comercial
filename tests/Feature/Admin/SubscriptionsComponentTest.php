@@ -12,20 +12,22 @@ use Livewire\Livewire;
 function makeComponentSubResult(array $overrides = []): AdminSubscriptionResult
 {
     return new AdminSubscriptionResult(
-        id:           $overrides['id']        ?? 1,
-        stripeId:     $overrides['stripeId']  ?? 'sub_TEST',
-        status:       $overrides['status']    ?? 'active',
-        userName:     $overrides['userName']  ?? 'Jane Doe',
-        userEmail:    $overrides['userEmail'] ?? 'jane@example.com',
-        pmType:       null,
-        pmLastFour:   null,
-        planName:     $overrides['planName']  ?? 'Starter',
-        planKey:      $overrides['planKey']   ?? 'starter',
-        unitAmount:   50000,
-        currency:     'MXN',
-        interval:     'month',
-        subscribedAt: new \DateTimeImmutable('2025-01-15'),
-        endsAt:       null,
+        id:               $overrides['id']        ?? 1,
+        userId:           $overrides['userId']    ?? 1,
+        stripeId:         $overrides['stripeId']  ?? 'sub_TEST',
+        stripeCustomerId: $overrides['stripeCustomerId'] ?? 'cus_TEST',
+        status:           $overrides['status']    ?? 'active',
+        userName:         $overrides['userName']  ?? 'Jane Doe',
+        userEmail:        $overrides['userEmail'] ?? 'jane@example.com',
+        pmType:           null,
+        pmLastFour:       null,
+        planName:         $overrides['planName']  ?? 'Starter',
+        planKey:          $overrides['planKey']   ?? 'starter',
+        unitAmount:       50000,
+        currency:         'MXN',
+        interval:         'month',
+        subscribedAt:     new \DateTimeImmutable('2025-01-15'),
+        endsAt:           null,
     );
 }
 

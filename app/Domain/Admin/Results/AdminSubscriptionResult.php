@@ -6,7 +6,9 @@ readonly class AdminSubscriptionResult
 {
     public function __construct(
         public int               $id,
+        public int               $userId,
         public string            $stripeId,
+        public ?string           $stripeCustomerId,
         public string            $status,
         public string            $userName,
         public string            $userEmail,
