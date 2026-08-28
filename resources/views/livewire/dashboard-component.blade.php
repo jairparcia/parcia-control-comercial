@@ -72,7 +72,7 @@
             <div>
                 <p class="text-xs text-[#6b7280] font-medium">Plan activo</p>
                 <p class="text-xl font-bold text-[#1a1f36]">{{ $presenter->planName() }}</p>
-                <p class="text-xs text-[#9ca3af]">Vence {{ $presenter->planExpiry() }}</p>
+                <p class="text-xs text-[#9ca3af]">Próxima factura {{ $presenter->planExpiry() }}</p>
             </div>
         </div>
 

@@ -4,14 +4,14 @@ namespace App\Application\Admin;
 
 use App\Domain\Admin\Contracts\CustomerAdminRepositoryInterface;
 
-class ListCustomersService
+class UpdateCustomerService
 {
     public function __construct(
         private readonly CustomerAdminRepositoryInterface $customers,
     ) {}
 
-    public function execute(string $statusFilter = 'all'): array
+    public function execute(int $userId, ?string $description, ?string $country): void
     {
-        return $this->customers->all($statusFilter);
+        $this->customers->update($userId, $description, $country);
     }
 }

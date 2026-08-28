@@ -10,6 +10,8 @@ interface SubscriptionAdminRepositoryInterface
     /** @return AdminSubscriptionResult[] */
     public function all(string $statusFilter = 'active'): array;
 
+    public function findByUserId(int $userId): ?AdminSubscriptionResult;
+
     /** @param ProviderSubscriptionDataDTO[] $subscriptions */
     public function insertMissing(array $subscriptions): int;
 
