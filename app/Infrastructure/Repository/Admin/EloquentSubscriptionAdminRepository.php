@@ -21,6 +21,16 @@ class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepository
             ->all();
     }
 
+    public function findByStripeId(string $stripeId): ?AdminSubscriptionResult
+    {
+        $sub = Subscription::query()
+            ->with(['user', 'plan'])
+            ->where('stripe_id', $stripeId)
+            ->first();
+
+        return $sub ? $this->toResult($sub) : null;
+    }
+
     public function findByUserId(int $userId): ?AdminSubscriptionResult
     {
         $sub = Subscription::query()
@@ -108,20 +118,22 @@ class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepository
     private function toResult(Subscription $sub): AdminSubscriptionResult
     {
         return new AdminSubscriptionResult(
-            id:           $sub->id,
-            stripeId:     $sub->stripe_id,
-            status:       $sub->stripe_status,
-            userName:     $sub->user->name,
-            userEmail:    $sub->user->email,
-            pmType:       $sub->user->pm_type,
-            pmLastFour:   $sub->user->pm_last_four,
-            planName:     $sub->plan?->name,
-            planKey:      $sub->plan?->key,
-            unitAmount:   $sub->plan?->unit_amount,
-            currency:     $sub->plan?->currency,
-            interval:     $sub->plan?->interval,
-            subscribedAt: new \DateTimeImmutable($sub->created_at->toDateTimeString()),
-            endsAt:       $sub->ends_at ? new \DateTimeImmutable($sub->ends_at->toDateTimeString()) : null,
+            id:               $sub->id,
+            userId:           $sub->user_id,
+            stripeId:         $sub->stripe_id,
+            stripeCustomerId: $sub->user->stripe_id,
+            status:           $sub->stripe_status,
+            userName:         $sub->user->name,
+            userEmail:        $sub->user->email,
+            pmType:           $sub->user->pm_type,
+            pmLastFour:       $sub->user->pm_last_four,
+            planName:         $sub->plan?->name,
+            planKey:          $sub->plan?->key,
+            unitAmount:       $sub->plan?->unit_amount,
+            currency:         $sub->plan?->currency,
+            interval:         $sub->plan?->interval,
+            subscribedAt:     new \DateTimeImmutable($sub->created_at->toDateTimeString()),
+            endsAt:           $sub->ends_at ? new \DateTimeImmutable($sub->ends_at->toDateTimeString()) : null,
         );
     }
 }
