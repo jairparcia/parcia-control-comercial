@@ -206,7 +206,7 @@ it('maps event description and formats time in Spanish locale', function () {
     $result = presentTxDetail(['events' => $events])->events;
 
     expect($result[0]['description'])->toBe('Pago iniciado');
-    expect($result[0]['time'])->toBe('20 ago 09:16');
+    expect($result[0]['time'])->toBe('20 ago. 09:16');
 });
 
 it('returns one row per event', function () {

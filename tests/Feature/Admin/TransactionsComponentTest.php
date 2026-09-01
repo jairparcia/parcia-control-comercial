@@ -129,11 +129,9 @@ it('defaults the statusFilter to all', function () {
 });
 
 it('passes the statusFilter to the service', function () {
-    $this->mock(ListAdminTransactionsService::class)
-        ->shouldReceive('execute')
-        ->with('failed')
-        ->once()
-        ->andReturn([]);
+    $mock = $this->mock(ListAdminTransactionsService::class);
+    $mock->shouldReceive('execute')->with('all')->andReturn([]);
+    $mock->shouldReceive('execute')->with('failed')->once()->andReturn([]);
 
     Livewire::actingAs(User::factory()->internal()->create())
         ->test(TransactionsComponent::class)
