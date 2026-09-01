@@ -8,9 +8,11 @@ use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
 use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
 use App\Domain\Admin\Contracts\SubscriptionAdminRepositoryInterface;
 use App\Domain\Admin\Contracts\SubscriptionProviderGatewayInterface;
+use App\Domain\Admin\Contracts\TransactionProviderGatewayInterface;
 use App\Infrastructure\Gateway\Stripe\StripeCustomerGateway;
 use App\Infrastructure\Gateway\Stripe\StripePlanGateway;
 use App\Infrastructure\Gateway\Stripe\StripeSubscriptionGateway;
+use App\Infrastructure\Gateway\Stripe\StripeTransactionGateway;
 use App\Infrastructure\Repository\Admin\EloquentCustomerAdminRepository;
 use App\Infrastructure\Repository\Admin\EloquentPlanAdminRepository;
 use App\Infrastructure\Repository\Admin\EloquentSubscriptionAdminRepository;
@@ -41,6 +43,12 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->app->bind(CustomerProviderGatewayInterface::class, function () {
             return new StripeCustomerGateway(
+                new StripeClient(config('cashier.secret')),
+            );
+        });
+
+        $this->app->bind(TransactionProviderGatewayInterface::class, function () {
+            return new StripeTransactionGateway(
                 new StripeClient(config('cashier.secret')),
             );
         });
