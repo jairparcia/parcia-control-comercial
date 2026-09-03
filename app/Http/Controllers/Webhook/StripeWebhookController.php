@@ -84,6 +84,24 @@ class StripeWebhookController extends CashierWebhookController
         return new Response('Webhook Handled.', 200);
     }
 
+    protected function handleChargeSucceeded(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleChargeRefunded(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleChargeUpdated(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
     // Resolves user and plan from the raw Stripe payload, then forwards to the application service.
     private function forward(string $event, array $payload): void
     {
