@@ -16,7 +16,9 @@ readonly class AdminTransactionResult
         public ?string           $description,
         public ?string           $customerName,
         public ?string           $customerEmail,
-        public ?string           $stripeCustomerId,
+        public ?string            $stripeCustomerId,
         public \DateTimeImmutable $createdAt,
+        public ?int               $id     = null,
+        public ?int               $userId = null,
     ) {}
 }
