@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Gateway\Stripe;
 
 use App\Domain\Admin\Contracts\TransactionProviderGatewayInterface;
-use App\Domain\Admin\Results\AdminTransactionResult;
+use App\Domain\Admin\Entities\ProviderTransactionDataDTO;
 use App\Domain\Admin\Results\TransactionDetailResult;
 use App\Domain\Admin\Results\TransactionEventResult;
 use App\Domain\Admin\Results\TransactionFeeDetailResult;
@@ -15,30 +15,23 @@ class StripeTransactionGateway implements TransactionProviderGatewayInterface
         private readonly StripeClient $client,
     ) {}
 
-    public function listRecent(int $limit = 100): array
+    public function listAll(int $limit = 100): array
     {
         $results = [];
-        $params  = ['limit' => min($limit, 100)];
-
-        $page = $this->client->charges->all($params);
+        $page    = $this->client->charges->all(['limit' => min($limit, 100)]);
 
         foreach ($page->data as $charge) {
-            $effectiveStatus = $this->resolveStatus($charge);
-
             $methodDetails = $charge->payment_method_details;
-            $methodType    = $methodDetails?->type ?? null;
-            $cardBrand     = $methodDetails?->card?->brand ?? null;
-            $cardLast4     = $methodDetails?->card?->last4 ?? null;
 
-            $results[] = new AdminTransactionResult(
+            $results[] = new ProviderTransactionDataDTO(
                 stripeId:            $charge->id,
                 amountCents:         (int) $charge->amount,
                 amountRefundedCents: (int) ($charge->amount_refunded ?? 0),
                 currency:            strtoupper($charge->currency),
-                status:              $effectiveStatus,
-                paymentMethodType:   $methodType,
-                cardBrand:           $cardBrand ? ucfirst($cardBrand) : null,
-                cardLast4:           $cardLast4,
+                status:              $this->resolveStatus($charge),
+                paymentMethodType:   $methodDetails?->type ?? null,
+                cardBrand:           $methodDetails?->card?->brand ? ucfirst($methodDetails->card->brand) : null,
+                cardLast4:           $methodDetails?->card?->last4 ?? null,
                 description:         $charge->description ?: null,
                 customerName:        $charge->billing_details?->name ?: null,
                 customerEmail:       $charge->billing_details?->email ?: null,
