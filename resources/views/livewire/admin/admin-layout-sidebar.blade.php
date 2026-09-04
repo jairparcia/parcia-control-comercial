@@ -43,17 +43,20 @@
                 </button>
 
                 @unless($collapsed)
-                    <button
-                        type="button"
-                        wire:click="toggle"
-                        title="Collapse sidebar"
-                        class="w-[28px] h-[28px] rounded-[7px] flex items-center justify-center bg-transparent border-0 shrink-0 cursor-ew-resize text-[#52525b] hover:text-[#a1a1aa] hover:bg-[#27272a] transition-colors duration-150"
-                    >
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <line x1="9" y1="3" x2="9" y2="21"/>
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <x-language-switcher theme="dark" />
+                        <button
+                            type="button"
+                            wire:click="toggle"
+                            title="{{ __('common.collapse_sidebar') }}"
+                            class="w-[28px] h-[28px] rounded-[7px] flex items-center justify-center bg-transparent border-0 shrink-0 cursor-ew-resize text-[#52525b] hover:text-[#a1a1aa] hover:bg-[#27272a] transition-colors duration-150"
+                        >
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <line x1="9" y1="3" x2="9" y2="21"/>
+                            </svg>
+                        </button>
+                    </div>
                 @endunless
             </div>
         </header>
@@ -136,11 +139,11 @@
                     </svg>
                 </span>
                 @unless($collapsed)
-                    <span class="text-[12px] whitespace-nowrap leading-none">Back to portal</span>
+                    <span class="text-[12px] whitespace-nowrap leading-none">{{ __('common.back_to_portal') }}</span>
                 @endunless
                 @if($collapsed)
                     <span class="pointer-events-none absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 z-[999] inline-flex items-center rounded-lg bg-[#27272a] border border-[#3f3f46] px-3 py-2 text-[12px] font-normal leading-none text-white whitespace-nowrap shadow-[0_4px_14px_rgba(0,0,0,0.4)] opacity-0 invisible transition-all duration-150 group-hover:opacity-100 group-hover:visible">
-                        Back to portal
+                        {{ __('common.back_to_portal') }}
                     </span>
                 @endif
             </a>
@@ -166,7 +169,7 @@
                         @csrf
                         <button
                             type="submit"
-                            title="Log out"
+                            title="{{ __('common.log_out') }}"
                             class="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center text-[#52525b] hover:text-[#a1a1aa] hover:bg-[#27272a] transition-colors duration-150"
                         >
                             <svg class="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">

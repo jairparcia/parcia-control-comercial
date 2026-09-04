@@ -40,7 +40,7 @@ class AdminCustomerPresenter
             subStripeId:  $sub?->stripeSubscriptionId ?? '',
             subPlanName:  $sub?->planName ?? '',
             subInterval:  $sub
-                ? ($sub->interval === 'year' ? 'Billed annually' : 'Billed monthly')
+                ? ($sub->interval === 'year' ? __('common.billed_annually') : __('common.billed_monthly'))
                 : '',
             subNextDate:   $sub?->nextBillingDate
                 ? $this->formatDate($sub->nextBillingDate)
@@ -59,13 +59,13 @@ class AdminCustomerPresenter
     private function present(AdminCustomerResult $customer): AdminCustomerViewModel
     {
         if ($customer->archived) {
-            $statusLabel = 'Archived';
+            $statusLabel = __('common.status_archived');
             $statusColor = 'text-amber-400 bg-amber-400/10';
         } elseif ($customer->hasActiveSub) {
-            $statusLabel = 'Active';
+            $statusLabel = __('common.status_active');
             $statusColor = 'text-emerald-400 bg-emerald-400/10';
         } else {
-            $statusLabel = 'No subscription';
+            $statusLabel = __('common.status_no_subscription');
             $statusColor = 'text-[#71717a] bg-[#27272a]';
         }
 

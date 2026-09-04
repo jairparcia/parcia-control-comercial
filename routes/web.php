@@ -38,4 +38,6 @@ Route::middleware(['auth', 'requires.internal'])->prefix('admin')->name('admin.'
 // Stripe webhooks — no auth middleware, verified by Stripe signature
 Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])->name('stripe.webhook');
 
+Route::post('locale', \App\Http\Controllers\LocaleController::class)->name('locale.switch');
+
 require __DIR__.'/auth.php';

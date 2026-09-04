@@ -39,14 +39,14 @@ class AdminSubscriptionPresenter
     private function statusLabel(string $status): string
     {
         return match ($status) {
-            'active'             => 'Activa',
-            'trialing'           => 'Prueba',
-            'past_due'           => 'Pago pendiente',
-            'canceled'           => 'Cancelada',
-            'incomplete'         => 'Incompleta',
-            'incomplete_expired' => 'Expirada',
-            'unpaid'             => 'Sin pagar',
-            'paused'             => 'Pausada',
+            'active'             => __('common.status_active'),
+            'trialing'           => __('common.status_trialing'),
+            'past_due'           => __('common.status_past_due'),
+            'canceled'           => __('common.status_canceled'),
+            'incomplete'         => __('common.status_incomplete'),
+            'incomplete_expired' => __('common.status_expired'),
+            'unpaid'             => __('common.status_unpaid'),
+            'paused'             => __('common.status_paused'),
             default              => ucfirst($status),
         };
     }
@@ -161,10 +161,10 @@ class AdminSubscriptionPresenter
     private function invoiceStatusLabel(string $status): string
     {
         return match ($status) {
-            'paid'   => 'Pagada',
-            'open'   => 'Abierta',
-            'void'   => 'Anulada',
-            'draft'  => 'Borrador',
+            'paid'   => __('common.invoice_paid'),
+            'open'   => __('common.invoice_open'),
+            'void'   => __('common.invoice_void'),
+            'draft'  => __('common.invoice_draft'),
             default  => ucfirst($status),
         };
     }
@@ -182,10 +182,10 @@ class AdminSubscriptionPresenter
     private function intervalLabel(string $interval): string
     {
         return match ($interval) {
-            'month' => 'Mensual',
-            'year'  => 'Anual',
-            'week'  => 'Semanal',
-            'day'   => 'Diario',
+            'month' => __('common.interval_monthly'),
+            'year'  => __('common.interval_annual'),
+            'week'  => __('common.interval_weekly'),
+            'day'   => __('common.interval_daily'),
             default => ucfirst($interval),
         };
     }

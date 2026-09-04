@@ -27,6 +27,8 @@ readonly class TransactionDetailViewModel
         public ?string $cardIssuer,
         public ?string $cardCountry,
         public ?string $cvcCheckLabel,
+        public bool    $cvcCheckPassed,
+        public string  $cvcCheckClass,
         public ?string $billingName,
         public ?string $billingEmail,
         public ?string $billingCountry,
