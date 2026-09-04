@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-xl font-semibold text-white">Subscription plans</h1>
-            <p class="text-sm text-[#71717a] mt-0.5">Manage plans and sync with Stripe automatically.</p>
+            <h1 class="text-xl font-semibold text-white">{{ __('admin.subscription_plans') }}</h1>
+            <p class="text-sm text-[#71717a] mt-0.5">{{ __('admin.plans_subtitle') }}</p>
         </div>
         <button
             wire:click="openCreate"
@@ -12,7 +12,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            New plan
+            {{ __('admin.new_plan') }}
         </button>
     </div>
 
@@ -21,12 +21,12 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-[#27272a] bg-[#09090b]">
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Plan</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Key</th>
-                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">Price</th>
-                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">Quota</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.plan') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('admin.key') }}</th>
+                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">{{ __('admin.price') }}</th>
+                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">{{ __('admin.quota') }}</th>
                     <th class="text-center px-5 py-3 font-medium text-[#71717a]">Stripe</th>
-                    <th class="text-center px-5 py-3 font-medium text-[#71717a]">Status</th>
+                    <th class="text-center px-5 py-3 font-medium text-[#71717a]">{{ __('common.status') }}</th>
                     <th class="px-5 py-3"></th>
                 </tr>
             </thead>
@@ -44,7 +44,7 @@
                         </td>
                         <td class="px-5 py-4 text-right text-[#a1a1aa]">
                             @if ($plan->isFree)
-                                <span class="text-[#52525b]">Free</span>
+                                <span class="text-[#52525b]">{{ __('common.free') }}</span>
                             @else
                                 {{ $plan->formattedPrice }}
                                 <span class="text-xs text-[#52525b]">/{{ $plan->formattedInterval }}</span>
@@ -52,7 +52,7 @@
                         </td>
                         <td class="px-5 py-4 text-right text-[#a1a1aa]">
                             {{ $plan->formattedQuota }}
-                            <span class="text-xs text-[#52525b]">scans</span>
+                            <span class="text-xs text-[#52525b]">{{ __('admin.scans') }}</span>
                         </td>
                         <td class="px-5 py-4 text-center">
                             @if ($plan->stripePriceId)
@@ -60,7 +60,7 @@
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    Linked
+                                    {{ __('admin.linked') }}
                                 </span>
                             @else
                                 <span class="text-xs text-[#52525b]">—</span>
@@ -81,14 +81,14 @@
                                 wire:click="openEdit({{ $plan->id }})"
                                 class="text-sm text-[#a1a1aa] hover:text-white font-medium transition-colors"
                             >
-                                Edit
+                                {{ __('common.edit') }}
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="7" class="px-5 py-12 text-center text-[#52525b]">
-                            No plans yet. Create the first one.
+                            {{ __('admin.no_plans') }}
                         </td>
                     </tr>
                 @endforelse

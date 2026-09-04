@@ -1,5 +1,5 @@
 <div x-data="{ open: @entangle('panelOpen') }" @keydown.escape.window="if (open) $wire.close()">
-    <x-slide-over title="Transaction" max-width="max-w-2xl" close-action="$wire.close()">
+    <x-slide-over :title="__('admin.transaction')" max-width="max-w-2xl" close-action="$wire.close()">
         <x-slot:badge>
             <span class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full {{ $statusBadgeClass }}">
                 {{ $statusLabel }}
@@ -13,7 +13,7 @@
             <p class="text-3xl font-semibold text-white tracking-tight">{{ $formattedAmount }}</p>
             @if ($customerName)
                 <p class="text-sm text-[#71717a] mt-1">
-                    Charged to
+                    {{ __('admin.charged_to') }}
                     <span class="text-[#a1a1aa]">{{ $customerName }}</span>
                 </p>
             @endif
@@ -22,11 +22,10 @@
         {{-- ── Recent activity (timeline) ────────────────────────────────────── --}}
         @if ($events)
             <section class="mb-6">
-                <h2 class="text-sm font-medium text-white mb-3">Recent activity</h2>
+                <h2 class="text-sm font-medium text-white mb-3">{{ __('admin.recent_activity') }}</h2>
                 <ol class="relative border-l border-[#3f3f46] ml-2">
                     @foreach ($events as $event)
                         <li class="mb-4 ml-5 last:mb-0">
-                            {{-- Filled/highlighted dot for the most recent event, hollow for the rest --}}
                             @if ($loop->first)
                                 <span class="absolute -left-[7px] w-3.5 h-3.5 rounded-full bg-violet-500 ring-2 ring-[#18181b]"></span>
                             @else
@@ -46,10 +45,10 @@
 
         {{-- ── Purchase summary ───────────────────────────────────────────────── --}}
         <section class="mb-6">
-            <h2 class="text-sm font-medium text-white mb-3">Purchase summary</h2>
+            <h2 class="text-sm font-medium text-white mb-3">{{ __('admin.purchase_summary') }}</h2>
             <dl class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
                 <div>
-                    <dt class="text-[#52525b] font-medium">Customer</dt>
+                    <dt class="text-[#52525b] font-medium">{{ __('common.customer') }}</dt>
                     <dd class="text-[#a1a1aa] mt-0.5">
                         @if ($customerEmail)
                             <div>{{ $customerEmail }}</div>
@@ -67,7 +66,7 @@
                 </div>
 
                 <div>
-                    <dt class="text-[#52525b] font-medium">Subscription</dt>
+                    <dt class="text-[#52525b] font-medium">{{ __('common.subscription') }}</dt>
                     <dd class="text-[#a1a1aa] mt-0.5">
                         @if ($planName || $priceId)
                             @if ($planName)
@@ -83,12 +82,12 @@
                 </div>
 
                 <div>
-                    <dt class="text-[#52525b] font-medium">Subscription ID</dt>
+                    <dt class="text-[#52525b] font-medium">{{ __('admin.subscription_id') }}</dt>
                     <dd class="text-[#a1a1aa] mt-0.5 text-xs font-mono break-all">{{ $subscriptionId ?? '—' }}</dd>
                 </div>
 
                 <div>
-                    <dt class="text-[#52525b] font-medium">Invoice ID</dt>
+                    <dt class="text-[#52525b] font-medium">{{ __('admin.invoice_id') }}</dt>
                     <dd class="text-[#a1a1aa] mt-0.5">{{ $invoiceNumber ?? '—' }}</dd>
                 </div>
             </dl>
@@ -98,16 +97,14 @@
 
         {{-- ── Payment breakdown ──────────────────────────────────────────────── --}}
         <section class="mb-6">
-            <h2 class="text-sm font-medium text-white mb-3">Payment breakdown</h2>
+            <h2 class="text-sm font-medium text-white mb-3">{{ __('admin.payment_breakdown') }}</h2>
             <div class="bg-[#09090b] rounded-lg border border-[#27272a] divide-y divide-[#27272a] text-sm">
 
-                {{-- Amount charged --}}
                 <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-[#a1a1aa]">Amount charged</span>
+                    <span class="text-[#a1a1aa]">{{ __('admin.amount_charged') }}</span>
                     <span class="text-white font-medium tabular-nums">{{ $formattedAmount }}</span>
                 </div>
 
-                {{-- Stripe fee — accordion --}}
                 <div x-data="{ feeOpen: false }">
                     <button
                         type="button"
@@ -122,7 +119,7 @@
                             >
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            Stripe fee
+                            {{ __('admin.stripe_fee') }}
                         </span>
                         <span class="text-red-400 tabular-nums">−{{ $formattedFees }}</span>
                     </button>
@@ -144,15 +141,14 @@
                             </div>
                         @empty
                             <div class="px-6 py-2">
-                                <span class="text-xs text-[#52525b]">No breakdown available</span>
+                                <span class="text-xs text-[#52525b]">{{ __('admin.no_breakdown') }}</span>
                             </div>
                         @endforelse
                     </div>
                 </div>
 
-                {{-- Net amount --}}
                 <div class="flex items-center justify-between px-4 py-3 bg-[#18181b] rounded-b-lg">
-                    <span class="text-white font-medium">Net amount</span>
+                    <span class="text-white font-medium">{{ __('admin.net_amount') }}</span>
                     <span class="text-emerald-400 font-medium tabular-nums">{{ $formattedNet }}</span>
                 </div>
             </div>
@@ -162,7 +158,7 @@
 
         {{-- ── Payment method ─────────────────────────────────────────────────── --}}
         <section class="mb-6">
-            <h2 class="text-sm font-medium text-white mb-3">Payment method</h2>
+            <h2 class="text-sm font-medium text-white mb-3">{{ __('common.payment_method') }}</h2>
             <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                 @if ($paymentMethodId)
                     <div>
@@ -173,73 +169,73 @@
 
                 @if ($cardDisplay)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Number</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.number') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $cardDisplay }}</dd>
                     </div>
                 @endif
 
                 @if ($cardFingerprint)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Fingerprint</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.fingerprint') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5 text-xs font-mono">{{ $cardFingerprint }}</dd>
                     </div>
                 @endif
 
                 @if ($cardExpiry)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Expires</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.expires') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $cardExpiry }}</dd>
                     </div>
                 @endif
 
                 @if ($cardType)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Type</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.type') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5 capitalize">{{ $cardType }}</dd>
                     </div>
                 @endif
 
                 @if ($cardIssuer)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Issuer</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.issuer') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $cardIssuer }}</dd>
                     </div>
                 @endif
 
                 @if ($billingName)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Cardholder</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.cardholder') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $billingName }}</dd>
                     </div>
                 @endif
 
                 @if ($billingEmail)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Cardholder email</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.cardholder_email') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $billingEmail }}</dd>
                     </div>
                 @endif
 
                 @if ($billingCountry)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Address</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.address') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $billingCountry }}</dd>
                     </div>
                 @endif
 
                 @if ($cardCountry)
                     <div>
-                        <dt class="text-[#52525b] font-medium">Card origin</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.card_origin') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5">{{ $cardCountry }}</dd>
                     </div>
                 @endif
 
                 @if ($cvcCheckLabel)
                     <div>
-                        <dt class="text-[#52525b] font-medium">CVC check</dt>
-                        <dd class="mt-0.5 {{ $cvcCheckLabel === 'Superada' ? 'text-emerald-400' : ($cvcCheckLabel === 'Fallida' ? 'text-red-400' : 'text-[#a1a1aa]') }}">
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.cvc_check') }}</dt>
+                        <dd class="mt-0.5 {{ $cvcCheckClass }}">
                             {{ $cvcCheckLabel }}
-                            @if ($cvcCheckLabel === 'Superada')
+                            @if ($cvcCheckPassed)
                                 ✓
                             @endif
                         </dd>
@@ -248,7 +244,7 @@
 
                 @if ($paymentIntentId)
                     <div class="col-span-2">
-                        <dt class="text-[#52525b] font-medium">Reusable payment ID</dt>
+                        <dt class="text-[#52525b] font-medium">{{ __('admin.reusable_payment_id') }}</dt>
                         <dd class="text-[#a1a1aa] mt-0.5 text-xs font-mono break-all">{{ $paymentIntentId }}</dd>
                     </div>
                 @endif

@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-5">
         <div>
-            <h1 class="text-xl font-semibold text-white">Customers</h1>
-            <p class="text-sm text-[#71717a] mt-0.5">All registered users and subscribers.</p>
+            <h1 class="text-xl font-semibold text-white">{{ __('admin.customers') }}</h1>
+            <p class="text-sm text-[#71717a] mt-0.5">{{ __('admin.customers_subtitle') }}</p>
         </div>
         <button
             wire:click="import"
@@ -14,22 +14,22 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
             </svg>
-            <span wire:loading.remove wire:target="import">Import from Stripe</span>
-            <span wire:loading wire:target="import">Importing…</span>
+            <span wire:loading.remove wire:target="import">{{ __('common.import_stripe') }}</span>
+            <span wire:loading wire:target="import">{{ __('common.importing') }}</span>
         </button>
     </div>
 
     {{-- Filter bar --}}
     <div class="flex items-center gap-2 mb-4">
-        <span class="text-sm text-[#71717a]">Filter by</span>
+        <span class="text-sm text-[#71717a]">{{ __('common.filter_by') }}</span>
         <select
             wire:model.live="statusFilter"
             class="bg-[#27272a] border border-[#3f3f46] text-sm text-white rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#52525b] cursor-pointer"
         >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="archived">Archived</option>
-            <option value="all">All statuses</option>
+            <option value="active">{{ __('common.status_active') }}</option>
+            <option value="inactive">{{ __('common.status_inactive') }}</option>
+            <option value="archived">{{ __('common.status_archived') }}</option>
+            <option value="all">{{ __('common.all_statuses') }}</option>
         </select>
     </div>
 
@@ -38,12 +38,12 @@
         <table class="w-full text-sm min-w-[900px]">
             <thead>
                 <tr class="border-b border-[#27272a] bg-[#09090b]">
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Name</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Email</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Status</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Description</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Country</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Created</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.name') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.email') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.status') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.description') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.country') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.created') }}</th>
                     <th class="px-5 py-3"></th>
                 </tr>
             </thead>
@@ -66,7 +66,7 @@
                         <td class="px-5 py-4">
                             <button
                                 @click="$dispatch('open-customer-panel', { id: {{ $customer->id }} })"
-                                title="More details"
+                                title="{{ __('common.more_details') }}"
                                 class="p-1.5 text-[#52525b] hover:text-white hover:bg-[#27272a] rounded transition-colors"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="px-5 py-12 text-center text-[#52525b]">
-                            No customers found.
+                            {{ __('admin.no_customers') }}
                         </td>
                     </tr>
                 @endforelse
