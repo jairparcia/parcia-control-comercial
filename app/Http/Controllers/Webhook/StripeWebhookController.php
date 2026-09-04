@@ -20,18 +20,16 @@ class StripeWebhookController extends CashierWebhookController
 
     protected function handleInvoicePaid(array $payload): Response
     {
-        $response = parent::handleInvoicePaid($payload);
-        $this->forward('subscription.activated', $payload);
         $this->syncInvoice->execute($payload['data']['object']);
-        return $response;
+        $this->forward('subscription.activated', $payload);
+        return $this->successMethod();
     }
 
     protected function handleInvoicePaymentFailed(array $payload): Response
     {
-        $response = parent::handleInvoicePaymentFailed($payload);
-        $this->forward('payment.failed', $payload);
         $this->syncInvoice->execute($payload['data']['object']);
-        return $response;
+        $this->forward('payment.failed', $payload);
+        return $this->successMethod();
     }
 
     protected function handleInvoiceFinalized(array $payload): Response
