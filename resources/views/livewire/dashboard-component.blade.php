@@ -4,13 +4,13 @@
     <div class="bg-white rounded-2xl border border-[#e2e4ea] p-6 space-y-3">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-[#6b7280]">Escaneos este mes</p>
+                <p class="text-sm font-medium text-[#6b7280]">{{ __('portal.scans_this_month') }}</p>
                 <p class="text-2xl font-bold text-[#1a1f36]">
                     {{ $presenter->scansUsed() }}
                     <span class="text-base font-normal text-[#6b7280]">/ {{ $presenter->scansLimit() }}</span>
                 </p>
             </div>
-            <span class="text-sm text-[#6b7280]">{{ $presenter->scansRemaining() }} restantes</span>
+            <span class="text-sm text-[#6b7280]">{{ __('portal.count_remaining', ['count' => $presenter->scansRemaining()]) }}</span>
         </div>
 
         <div class="w-full bg-[#f3f4f6] rounded-full h-2.5 overflow-hidden">
@@ -27,7 +27,7 @@
                 </svg>
                 <span class="text-[#92400e]">{{ $presenter->upgradeWarning() }}</span>
                 <a href="{{ route('billing') }}" class="ml-auto text-[#5b69e2] font-medium hover:underline whitespace-nowrap">
-                    Mejorar plan →
+                    {{ __('portal.upgrade_plan') }}
                 </a>
             </div>
         @endif
@@ -44,7 +44,7 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-[#6b7280] font-medium">Creadores</p>
+                <p class="text-xs text-[#6b7280] font-medium">{{ __('portal.creators') }}</p>
                 <p class="text-xl font-bold text-[#1a1f36]">{{ $presenter->totalCreators() }}</p>
             </div>
         </div>
@@ -57,7 +57,7 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-[#6b7280] font-medium">Publicaciones</p>
+                <p class="text-xs text-[#6b7280] font-medium">{{ __('portal.publications') }}</p>
                 <p class="text-xl font-bold text-[#1a1f36]">{{ $presenter->totalPublications() }}</p>
             </div>
         </div>
@@ -70,9 +70,9 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs text-[#6b7280] font-medium">Plan activo</p>
+                <p class="text-xs text-[#6b7280] font-medium">{{ __('portal.active_plan') }}</p>
                 <p class="text-xl font-bold text-[#1a1f36]">{{ $presenter->planName() }}</p>
-                <p class="text-xs text-[#9ca3af]">Próxima factura {{ $presenter->planExpiry() }}</p>
+                <p class="text-xs text-[#9ca3af]">{{ __('portal.next_invoice', ['date' => $presenter->planExpiry()]) }}</p>
             </div>
         </div>
 
@@ -84,8 +84,8 @@
         {{-- Creadores recientes --}}
         <div class="lg:col-span-2 bg-white rounded-2xl border border-[#e2e4ea] p-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="font-semibold text-[#1a1f36]">Creadores recientes</h2>
-                <a href="{{ route('creators') }}" class="text-sm text-[#5b69e2] hover:underline">Ver todos →</a>
+                <h2 class="font-semibold text-[#1a1f36]">{{ __('portal.recent_creators') }}</h2>
+                <a href="{{ route('creators') }}" class="text-sm text-[#5b69e2] hover:underline">{{ __('portal.view_all') }}</a>
             </div>
 
             <div class="divide-y divide-[#f3f4f6]">
@@ -111,7 +111,7 @@
 
         {{-- Clave de licencia --}}
         <div class="bg-white rounded-2xl border border-[#e2e4ea] p-6 space-y-4">
-            <h2 class="font-semibold text-[#1a1f36]">Clave de licencia</h2>
+            <h2 class="font-semibold text-[#1a1f36]">{{ __('portal.license_key') }}</h2>
 
             <div class="space-y-1">
                 <div class="flex items-center gap-2">
@@ -136,7 +136,7 @@
             <div class="pt-2 border-t border-[#f3f4f6]">
                 <a href="{{ route('settings') }}"
                    class="block w-full text-center py-2 rounded-xl bg-[#5b69e2] text-white text-sm font-medium hover:bg-[#4a58d0] transition-colors">
-                    Gestionar clave
+                    {{ __('portal.manage_key') }}
                 </a>
             </div>
         </div>

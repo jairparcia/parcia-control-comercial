@@ -15,19 +15,19 @@
     {{-- ── Hero ─────────────────────────────────────────────────────────── --}}
     <section class="text-center px-6 pt-10 pb-8 max-w-2xl mx-auto">
         <h1 class="text-[32px] font-bold tracking-[-0.03em] text-[#1a1f36] leading-tight">
-            Bienvenido, {{ $userName }}
+            {{ __('portal.welcome', ['name' => $userName]) }}
         </h1>
         <p class="mt-4 text-[15px] text-[#7c7c86] leading-relaxed">
-            Parcia Plugin te permite <strong class="text-[#353636] font-medium">escanear y guardar perfiles de creadores</strong>
-            de TikTok e Instagram directamente desde tu navegador. Toda la información queda
-            en tu portal personal, lista para buscar, filtrar y exportar cuando la necesites.
+            {{ __('portal.plugin_intro') }}
+            <strong class="text-[#353636] font-medium">{{ __('portal.plugin_intro_bold') }}</strong>
+            {{ __('portal.plugin_intro_end') }}
         </p>
         <p class="mt-2 text-[13.5px] text-[#9ca3af]">
-            Elige el plan con el que quieres comenzar. Puedes cambiarlo cuando quieras.
+            {{ __('portal.choose_plan_onboard') }}
         </p>
     </section>
 
-    {{-- ── Planes ───────────────────────────────────────────────────────── --}}
+    {{-- ── Plans ───────────────────────────────────────────────────────── --}}
     <section class="flex-1 px-6 pb-14 max-w-5xl mx-auto w-full">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-{{ $planCount }} gap-4">
 
@@ -36,11 +36,11 @@
 
                     @if ($plan->isPro)
                         <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#5b69e2] text-white text-[10.5px] font-semibold px-3 py-1 rounded-full whitespace-nowrap">
-                            Más popular
+                            {{ __('portal.most_popular') }}
                         </span>
                     @endif
 
-                    {{-- Nombre y precio --}}
+                    {{-- Name and price --}}
                     <div>
                         <p class="text-[12.5px] font-semibold uppercase tracking-widest text-[#9ca3af]">
                             {{ $plan->name }}
@@ -71,16 +71,16 @@
                             wire:click="startFree"
                             wire:loading.attr="disabled"
                             class="w-full py-3 rounded-xl text-[13.5px] font-semibold border border-[#e2e4ea] text-[#7c7c86] hover:bg-[#f3f4f6] transition-colors disabled:opacity-50">
-                            <span wire:loading.remove wire:target="startFree">Empezar gratis</span>
-                            <span wire:loading wire:target="startFree">Cargando...</span>
+                            <span wire:loading.remove wire:target="startFree">{{ __('portal.start_free') }}</span>
+                            <span wire:loading wire:target="startFree">{{ __('portal.loading') }}</span>
                         </button>
                     @else
                         <button
                             wire:click="choosePlan('{{ $plan->key }}')"
                             wire:loading.attr="disabled"
                             class="w-full py-3 rounded-xl text-[13.5px] font-semibold transition-colors disabled:opacity-50 {{ $plan->buttonClass }}">
-                            <span wire:loading.remove wire:target="choosePlan">Elegir {{ $plan->name }}</span>
-                            <span wire:loading wire:target="choosePlan">Redirigiendo...</span>
+                            <span wire:loading.remove wire:target="choosePlan">{{ __('portal.choose_name', ['name' => $plan->name]) }}</span>
+                            <span wire:loading wire:target="choosePlan">{{ __('portal.redirecting') }}</span>
                         </button>
                     @endif
                 </div>
@@ -89,7 +89,7 @@
         </div>
 
         <p class="text-center text-[12px] text-[#9ca3af] mt-8">
-            Puedes cambiar o cancelar tu plan en cualquier momento desde tu portal de facturación.
+            {{ __('portal.portal_notice') }}
         </p>
     </section>
 

@@ -18,33 +18,33 @@ class AdminLayoutSidebar extends Component
     {
         $user = auth()->user();
 
-        $name = $user?->name ?? 'User';
+        $name = $user?->name ?? __('admin.user');
 
         $navItems = [
             [
                 'key'      => 'plans',
-                'label'    => 'Plans',
+                'label'    => __('admin.plans'),
                 'route'    => route('admin.plans'),
                 'icon'     => 'plans',
                 'isActive' => $this->active === 'plans',
             ],
             [
                 'key'      => 'subscriptions',
-                'label'    => 'Subscriptions',
+                'label'    => __('admin.subscriptions'),
                 'route'    => route('admin.subscriptions'),
                 'icon'     => 'subscriptions',
                 'isActive' => $this->active === 'subscriptions',
             ],
             [
                 'key'      => 'customers',
-                'label'    => 'Customers',
+                'label'    => __('admin.customers'),
                 'route'    => route('admin.customers'),
                 'icon'     => 'customers',
                 'isActive' => $this->active === 'customers',
             ],
             [
                 'key'      => 'transactions',
-                'label'    => 'Transactions',
+                'label'    => __('admin.transactions'),
                 'route'    => route('admin.transactions'),
                 'icon'     => 'transactions',
                 'isActive' => $this->active === 'transactions',

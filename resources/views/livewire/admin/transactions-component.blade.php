@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-5">
         <div>
-            <h1 class="text-xl font-semibold text-white">Transactions</h1>
-            <p class="text-sm text-[#71717a] mt-0.5">Charges processed through Stripe.</p>
+            <h1 class="text-xl font-semibold text-white">{{ __('admin.transactions') }}</h1>
+            <p class="text-sm text-[#71717a] mt-0.5">{{ __('admin.transactions_subtitle') }}</p>
         </div>
         <button
             wire:click="import"
@@ -18,23 +18,23 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            Import from Stripe
+            {{ __('common.import_stripe') }}
         </button>
     </div>
 
     {{-- Filter bar --}}
     <div class="flex items-center gap-2 mb-4">
-        <span class="text-sm text-[#71717a]">Filter by</span>
+        <span class="text-sm text-[#71717a]">{{ __('common.filter_by') }}</span>
         <select
             wire:model.live="statusFilter"
             class="bg-[#27272a] border border-[#3f3f46] text-sm text-white rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#52525b] cursor-pointer"
         >
-            <option value="all">All statuses</option>
-            <option value="succeeded">Successful</option>
-            <option value="pending">Pending</option>
-            <option value="failed">Failed</option>
-            <option value="refunded">Refunded</option>
-            <option value="partially_refunded">Partially refunded</option>
+            <option value="all">{{ __('common.all_statuses') }}</option>
+            <option value="succeeded">{{ __('common.tx_successful') }}</option>
+            <option value="pending">{{ __('common.tx_pending') }}</option>
+            <option value="failed">{{ __('common.tx_failed') }}</option>
+            <option value="refunded">{{ __('common.tx_refunded') }}</option>
+            <option value="partially_refunded">{{ __('common.tx_partially_refunded') }}</option>
         </select>
     </div>
 
@@ -43,12 +43,12 @@
         <table class="w-full text-sm min-w-[900px]">
             <thead>
                 <tr class="border-b border-[#27272a] bg-[#09090b]">
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Customer</th>
-                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">Amount</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Status</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Payment method</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Description</th>
-                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">Date</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.customer') }}</th>
+                    <th class="text-right px-5 py-3 font-medium text-[#71717a]">{{ __('common.amount') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.status') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.payment_method') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.description') }}</th>
+                    <th class="text-left px-5 py-3 font-medium text-[#71717a]">{{ __('common.date') }}</th>
                     <th class="px-5 py-3"></th>
                 </tr>
             </thead>
@@ -91,7 +91,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="px-5 py-12 text-center text-[#52525b]">
-                            No transactions found.
+                            {{ __('admin.no_transactions') }}
                         </td>
                     </tr>
                 @endforelse
