@@ -57,7 +57,7 @@ it('returns Archived status for an archived customer', function () {
     $presenter = new AdminCustomerPresenter();
     $vm = $presenter->presentAll([makeAdminCustomerResult(archived: true, hasActiveSub: false)])[0];
 
-    expect($vm->statusLabel)->toBe('Archived');
+    expect($vm->statusLabel)->toBe('Archivado');
     expect($vm->statusColor)->toContain('amber');
 });
 
@@ -65,14 +65,14 @@ it('prioritises archived over active subscription for status', function () {
     $presenter = new AdminCustomerPresenter();
     $vm = $presenter->presentAll([makeAdminCustomerResult(archived: true, hasActiveSub: true)])[0];
 
-    expect($vm->statusLabel)->toBe('Archived');
+    expect($vm->statusLabel)->toBe('Archivado');
 });
 
 it('returns Active status for a customer with an active subscription', function () {
     $presenter = new AdminCustomerPresenter();
     $vm = $presenter->presentAll([makeAdminCustomerResult(archived: false, hasActiveSub: true)])[0];
 
-    expect($vm->statusLabel)->toBe('Active');
+    expect($vm->statusLabel)->toBe('Activa');
     expect($vm->statusColor)->toContain('emerald');
 });
 
@@ -80,7 +80,7 @@ it('returns No subscription status for a customer without a subscription', funct
     $presenter = new AdminCustomerPresenter();
     $vm = $presenter->presentAll([makeAdminCustomerResult(archived: false, hasActiveSub: false)])[0];
 
-    expect($vm->statusLabel)->toBe('No subscription');
+    expect($vm->statusLabel)->toBe('Sin suscripción');
 });
 
 // --- MRR calculation ---

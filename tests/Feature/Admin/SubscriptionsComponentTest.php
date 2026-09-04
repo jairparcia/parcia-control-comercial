@@ -83,7 +83,7 @@ it('shows the empty state when there are no subscriptions', function () {
 
     Livewire::actingAs(User::factory()->internal()->create())
         ->test(SubscriptionsComponent::class)
-        ->assertSee('No subscriptions yet');
+        ->assertSee('Aún no hay suscripciones');
 });
 
 it('renders multiple subscriptions', function () {
