@@ -29,28 +29,28 @@ class AdminSidebar extends Component
         $navItems = [
             [
                 'key'      => 'dashboard',
-                'label'    => 'Dashboard',
+                'label'    => __('portal.dashboard'),
                 'route'    => route('dashboard'),
                 'icon'     => 'home',
                 'isActive' => $this->active === 'dashboard',
             ],
             [
                 'key'      => 'creators',
-                'label'    => 'Mis Creadores',
+                'label'    => __('portal.my_creators'),
                 'route'    => '#',
                 'icon'     => 'creators',
                 'isActive' => $this->active === 'creators',
             ],
             [
                 'key'      => 'billing',
-                'label'    => 'Facturación',
+                'label'    => __('portal.billing'),
                 'route'    => route('billing'),
                 'icon'     => 'billing',
                 'isActive' => $this->active === 'billing',
             ],
             [
                 'key'      => 'settings',
-                'label'    => 'Configuración',
+                'label'    => __('portal.settings'),
                 'route'    => '#',
                 'icon'     => 'settings',
                 'isActive' => $this->active === 'settings',
@@ -58,7 +58,7 @@ class AdminSidebar extends Component
         ];
 
         $status = $this->statusService->execute($user->id);
-        $name   = $user?->name ?? 'Usuario';
+        $name   = $user?->name ?? __('admin.user');
 
         return view('livewire.layout.admin-sidebar', [
             'items'         => $navItems,
@@ -67,8 +67,8 @@ class AdminSidebar extends Component
             'userName'      => $name,
             'userInitials'  => strtoupper(mb_substr($name, 0, 2)),
             'userPlan'      => $user?->isInternal()
-                ? 'Equipo Parcia'
-                : 'Plan ' . ($status->plan?->label() ?? 'Gratuito'),
+                ? __('admin.parcia_team')
+                : 'Plan ' . ($status->plan?->label() ?? __('common.free')),
         ]);
     }
 }

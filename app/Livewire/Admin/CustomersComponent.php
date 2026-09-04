@@ -36,13 +36,13 @@ class CustomersComponent extends Component
 
             $this->dispatch('toast',
                 message: $count > 0
-                    ? "{$count} customer(s) imported from Stripe."
-                    : 'No new customers to import.',
+                    ? __('admin.customers_imported', ['count' => $count])
+                    : __('admin.no_new_customers'),
                 type: $count > 0 ? 'success' : 'info',
             );
         } catch (\Throwable $e) {
             report($e);
-            $this->dispatch('toast', message: 'Import failed: ' . $e->getMessage(), type: 'error');
+            $this->dispatch('toast', message: __('admin.import_failed', ['message' => $e->getMessage()]), type: 'error');
         } finally {
             $this->importing = false;
         }
