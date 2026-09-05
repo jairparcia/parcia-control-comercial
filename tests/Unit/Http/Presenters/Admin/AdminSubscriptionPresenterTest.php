@@ -9,20 +9,22 @@ use App\Http\Presenters\Admin\AdminSubscriptionViewModel;
 function makePresenterResult(array $overrides = []): AdminSubscriptionResult
 {
     return new AdminSubscriptionResult(
-        id:           $overrides['id']        ?? 1,
-        stripeId:     $overrides['stripeId']  ?? 'sub_TEST',
-        status:       $overrides['status']    ?? 'active',
-        userName:     $overrides['userName']  ?? 'Jane Doe',
-        userEmail:    $overrides['userEmail'] ?? 'jane@example.com',
-        pmType:       array_key_exists('pmType', $overrides)     ? $overrides['pmType']     : 'visa',
-        pmLastFour:   array_key_exists('pmLastFour', $overrides) ? $overrides['pmLastFour'] : '4242',
-        planName:     array_key_exists('planName', $overrides)   ? $overrides['planName']   : 'Starter',
-        planKey:      array_key_exists('planKey', $overrides)    ? $overrides['planKey']    : 'starter',
-        unitAmount:   array_key_exists('unitAmount', $overrides) ? $overrides['unitAmount'] : 50000,
-        currency:     array_key_exists('currency', $overrides)   ? $overrides['currency']   : 'MXN',
-        interval:     array_key_exists('interval', $overrides)   ? $overrides['interval']   : 'month',
-        subscribedAt: $overrides['subscribedAt'] ?? new \DateTimeImmutable('2025-01-15'),
-        endsAt:       array_key_exists('endsAt', $overrides)     ? $overrides['endsAt']     : null,
+        id:               $overrides['id']        ?? 1,
+        userId:           $overrides['userId']    ?? 1,
+        stripeId:         $overrides['stripeId']  ?? 'sub_TEST',
+        stripeCustomerId: $overrides['stripeCustomerId'] ?? 'cus_TEST',
+        status:           $overrides['status']    ?? 'active',
+        userName:         $overrides['userName']  ?? 'Jane Doe',
+        userEmail:        $overrides['userEmail'] ?? 'jane@example.com',
+        pmType:           array_key_exists('pmType', $overrides)     ? $overrides['pmType']     : 'visa',
+        pmLastFour:       array_key_exists('pmLastFour', $overrides) ? $overrides['pmLastFour'] : '4242',
+        planName:         array_key_exists('planName', $overrides)   ? $overrides['planName']   : 'Starter',
+        planKey:          array_key_exists('planKey', $overrides)    ? $overrides['planKey']    : 'starter',
+        unitAmount:       array_key_exists('unitAmount', $overrides) ? $overrides['unitAmount'] : 50000,
+        currency:         array_key_exists('currency', $overrides)   ? $overrides['currency']   : 'MXN',
+        interval:         array_key_exists('interval', $overrides)   ? $overrides['interval']   : 'month',
+        subscribedAt:     $overrides['subscribedAt'] ?? new \DateTimeImmutable('2025-01-15'),
+        endsAt:           array_key_exists('endsAt', $overrides)     ? $overrides['endsAt']     : null,
     );
 }
 
