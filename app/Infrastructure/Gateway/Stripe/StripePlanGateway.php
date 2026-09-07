@@ -48,13 +48,52 @@ class StripePlanGateway implements PlanProviderGatewayInterface
             'recurring'   => ['interval' => $interval],
         ]);
 
-        $this->stripe->prices->update($oldPriceId, ['active' => false]);
+        $this->stripe->products->update($productId, ['default_price' => $newPrice->id]);
 
         return $newPrice->id;
+    }
+
+    public function addPriceToProduct(string $productId, int $unitAmount, string $currency, string $interval): string
+    {
+        $price = $this->stripe->prices->create([
+            'product'     => $productId,
+            'unit_amount' => $unitAmount,
+            'currency'    => strtolower($currency),
+            'recurring'   => ['interval' => $interval],
+        ]);
+
+        $this->stripe->products->update($productId, ['default_price' => $price->id]);
+
+        return $price->id;
     }
 
     public function deactivatePlan(string $priceId): void
     {
         $this->stripe->prices->update($priceId, ['active' => false]);
+    }
+
+    public function listProductPrices(string $productId): array
+    {
+        $response = $this->stripe->prices->all([
+            'product' => $productId,
+            'limit'   => 100,
+        ]);
+
+        return array_map(fn ($price) => $price->toArray(), $response->data);
+    }
+
+    public function retrievePrice(string $priceId): array
+    {
+        return $this->stripe->prices->retrieve($priceId)->toArray();
+    }
+
+    public function archivePrice(string $priceId): void
+    {
+        $this->stripe->prices->update($priceId, ['active' => false]);
+    }
+
+    public function setDefaultPrice(string $productId, string $priceId): void
+    {
+        $this->stripe->products->update($productId, ['default_price' => $priceId]);
     }
 }

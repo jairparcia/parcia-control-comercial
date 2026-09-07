@@ -114,6 +114,24 @@ return [
     'scans'    => 'escaneos',
     'linked'   => 'Vinculado',
 
+    'plan_updated' => 'Plan actualizado correctamente.',
+    'plan_created' => 'Plan creado correctamente.',
+
+    // Plan prices panel
+    'plan_prices'           => 'Precios de Stripe',
+    'no_plan_prices'        => 'No se encontraron precios de Stripe para este plan.',
+    'subs'                  => 'Subs',
+    'price_status_default'  => 'Predeterminado',
+    'set_as_default'        => 'Establecer como predeterminado',
+    'archive_price'         => 'Archivar',
+    'archive_price_confirm' => '¿Archivar este precio? Esta acción no se puede deshacer.',
+    'price_archived'        => 'Precio archivado.',
+    'default_price_updated' => 'Precio predeterminado actualizado.',
+    'add_price'             => 'Agregar precio',
+    'price_added'           => 'Precio agregado.',
+    'currency'              => 'Divisa',
+    'interval'              => 'Intervalo',
+
     // Import feedback (toast messages)
     'import_failed'          => 'Error al importar: :message',
     'customers_imported'     => ':count cliente(s) importado(s) de Stripe.',

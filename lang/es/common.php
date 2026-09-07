@@ -3,6 +3,8 @@
 return [
     // UI actions
     'cancel'           => 'Cancelar',
+    'refresh'          => '↻ Actualizar',
+    'loading'          => 'Cargando…',
     'save_changes'     => 'Guardar cambios',
     'saving'           => 'Guardando…',
     'processing'       => 'Procesando…',

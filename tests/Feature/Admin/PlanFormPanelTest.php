@@ -7,7 +7,7 @@ use Livewire\Livewire;
 
 // ── Create ────────────────────────────────────────────────────────────────────
 
-it('creates a free plan without calling stripe', function () {
+it('creates a plan without price fields (no Stripe call)', function () {
     $user = User::factory()->internal()->create();
 
     Livewire::actingAs($user)
@@ -18,9 +18,6 @@ it('creates a free plan without calling stripe', function () {
         ->set('formDescription', 'Entry level plan')
         ->set('formFeatures', "TikTok & Instagram\nCSV export")
         ->set('formQuota', 200)
-        ->set('formUnitAmount', 0)
-        ->set('formCurrency', 'MXN')
-        ->set('formInterval', 'month')
         ->set('formSortOrder', 1)
         ->call('save');
 
@@ -30,7 +27,8 @@ it('creates a free plan without calling stripe', function () {
         ->and($plan->name)->toBe('Basic')
         ->and($plan->quota)->toBe(200)
         ->and($plan->features)->toBe(['TikTok & Instagram', 'CSV export'])
-        ->and($plan->stripe_price_id)->toBeNull();
+        ->and($plan->stripe_price_id)->toBeNull()
+        ->and($plan->stripe_product_id)->toBeNull();
 });
 
 it('validates required fields on create', function () {
@@ -113,8 +111,31 @@ it('populates form fields correctly when editing', function () {
         ->assertSet('isEditing', true)
         ->assertSet('formName', 'Pro')
         ->assertSet('formKey', 'pro')
-        ->assertSet('formUnitAmount', 300)
+        ->assertSet('formQuota', 2000)
         ->assertSet('formFeatures', "Webhooks\nPriority support");
+});
+
+it('save in edit mode does not require price fields and does not change price data', function () {
+    $plan = SubscriptionPlan::create([
+        'key' => 'pro', 'name' => 'Pro', 'unit_amount' => 30000,
+        'currency' => 'MXN', 'interval' => 'month', 'quota' => 2000,
+        'sort_order' => 1, 'active' => true,
+    ]);
+
+    $user = User::factory()->internal()->create();
+
+    Livewire::actingAs($user)
+        ->test(PlanFormPanel::class)
+        ->call('openPanel', $plan->id)
+        ->set('formName', 'Pro Updated')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $plan->refresh();
+    expect($plan->name)->toBe('Pro Updated')
+        ->and($plan->unit_amount)->toBe(30000)
+        ->and($plan->currency)->toBe('MXN')
+        ->and($plan->interval)->toBe('month');
 });
 
 // ── Features parsing ──────────────────────────────────────────────────────────
@@ -129,10 +150,76 @@ it('ignores blank lines in features textarea', function () {
         ->set('formKey', 'test-plan')
         ->set('formFeatures', "Feature A\n\nFeature B\n  \nFeature C")
         ->set('formQuota', 100)
-        ->set('formUnitAmount', 0)
         ->set('formSortOrder', 5)
         ->call('save');
 
     expect(SubscriptionPlan::where('key', 'test-plan')->first()->features)
         ->toBe(['Feature A', 'Feature B', 'Feature C']);
+});
+
+// ── Add price form ────────────────────────────────────────────────────────────
+
+it('shows price form when openPriceForm is called', function () {
+    $plan = SubscriptionPlan::create([
+        'key' => 'pro', 'name' => 'Pro', 'unit_amount' => 0,
+        'currency' => 'MXN', 'interval' => 'month', 'quota' => 2000,
+        'sort_order' => 1, 'active' => true,
+    ]);
+
+    $user = User::factory()->internal()->create();
+
+    Livewire::actingAs($user)
+        ->test(PlanFormPanel::class)
+        ->call('openPanel', $plan->id)
+        ->assertSet('showPriceForm', false)
+        ->call('openPriceForm')
+        ->assertSet('showPriceForm', true);
+});
+
+it('hides price form when cancelPriceForm is called', function () {
+    $plan = SubscriptionPlan::create([
+        'key' => 'pro', 'name' => 'Pro', 'unit_amount' => 0,
+        'currency' => 'MXN', 'interval' => 'month', 'quota' => 2000,
+        'sort_order' => 1, 'active' => true,
+    ]);
+
+    $user = User::factory()->internal()->create();
+
+    Livewire::actingAs($user)
+        ->test(PlanFormPanel::class)
+        ->call('openPanel', $plan->id)
+        ->call('openPriceForm')
+        ->assertSet('showPriceForm', true)
+        ->call('cancelPriceForm')
+        ->assertSet('showPriceForm', false);
+});
+
+it('validates new price amount must be at least 1', function () {
+    $plan = SubscriptionPlan::create([
+        'key' => 'pro', 'name' => 'Pro', 'unit_amount' => 0,
+        'currency' => 'MXN', 'interval' => 'month', 'quota' => 2000,
+        'sort_order' => 1, 'active' => true,
+    ]);
+
+    $user = User::factory()->internal()->create();
+
+    Livewire::actingAs($user)
+        ->test(PlanFormPanel::class)
+        ->call('openPanel', $plan->id)
+        ->call('openPriceForm')
+        ->set('newPriceAmount', 0)
+        ->call('addPrice')
+        ->assertHasErrors(['newPriceAmount']);
+});
+
+it('resets price form state when opening a fresh create panel', function () {
+    $user = User::factory()->internal()->create();
+
+    Livewire::actingAs($user)
+        ->test(PlanFormPanel::class)
+        ->call('openPanel', null)
+        ->assertSet('showPriceForm', false)
+        ->assertSet('newPriceAmount', 0)
+        ->assertSet('newPriceCurrency', 'MXN')
+        ->assertSet('newPriceInterval', 'month');
 });
