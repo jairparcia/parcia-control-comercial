@@ -96,6 +96,11 @@
                                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
+                        @elseif ($item['icon'] === 'transactions')
+                            <svg class="w-[16px] h-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
                         @endif
                     </span>
 
