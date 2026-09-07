@@ -114,6 +114,24 @@ return [
     'scans'    => 'scans',
     'linked'   => 'Linked',
 
+    'plan_updated' => 'Plan updated successfully.',
+    'plan_created' => 'Plan created successfully.',
+
+    // Plan prices panel
+    'plan_prices'           => 'Stripe Prices',
+    'no_plan_prices'        => 'No Stripe prices found for this plan.',
+    'subs'                  => 'Subs',
+    'price_status_default'  => 'Default',
+    'set_as_default'        => 'Set as default',
+    'archive_price'         => 'Archive',
+    'archive_price_confirm' => 'Archive this price? This cannot be undone.',
+    'price_archived'        => 'Price archived.',
+    'default_price_updated' => 'Default price updated.',
+    'add_price'             => 'Add price',
+    'price_added'           => 'Price added.',
+    'currency'              => 'Currency',
+    'interval'              => 'Interval',
+
     // Import feedback (toast messages)
     'import_failed'           => 'Import failed: :message',
     'customers_imported'      => ':count customer(s) imported from Stripe.',
