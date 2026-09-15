@@ -4,7 +4,7 @@ namespace App\Domain\Subscription\Contracts;
 
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 
-interface SubscriptionRepository
+interface SubscriptionRepositoryInterface
 {
     public function getStatus(int $userId): SubscriptionStatusResult;
 

@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
         ]);
+        $middleware->alias([
+            'requires.internal' => \App\Http\Middleware\RequiresInternalRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

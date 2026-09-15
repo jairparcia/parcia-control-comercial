@@ -16,8 +16,8 @@ beforeEach(function () {
         public function execute(): array
         {
             return [
-                new PlanInfo(key: 'starter', name: 'Starter', formattedPrice: 'MX$100', interval: 'month', currency: 'MXN'),
-                new PlanInfo(key: 'pro',     name: 'Pro',     formattedPrice: 'MX$250', interval: 'month', currency: 'MXN'),
+                new PlanInfo(key: 'starter', name: 'Starter', formattedPrice: 'MX$100', interval: 'month', currency: 'MXN', quota: 500),
+                new PlanInfo(key: 'pro',     name: 'Pro',     formattedPrice: 'MX$250', interval: 'month', currency: 'MXN', quota: 2000),
             ];
         }
     });
@@ -57,4 +57,4 @@ it('checkout throws exception for invalid plan key', function () {
     Livewire::actingAs($user)
         ->test(\App\Livewire\BillingComponent::class)
         ->call('checkout', 'plan_invalido');
-})->throws(\ValueError::class);
+})->throws(\RuntimeException::class);

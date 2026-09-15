@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Domain\Auth\Contracts\UserRepository;
+use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
 
 class CompleteOnboardingController extends Controller
 {
-    public function __construct(private readonly UserRepository $users) {}
+    public function __construct(private readonly UserRepositoryInterface $users) {}
 
     public function __invoke()
     {

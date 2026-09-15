@@ -10,5 +10,6 @@ readonly class AuthenticatedUserResult
         public string $email,
         public string $role,
         public bool $isNew,
+        public bool $hasOnboarded,
     ) {}
 }
