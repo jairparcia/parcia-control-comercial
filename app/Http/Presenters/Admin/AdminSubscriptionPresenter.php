@@ -4,6 +4,8 @@ namespace App\Http\Presenters\Admin;
 
 use App\Domain\Admin\Results\AdminSubscriptionResult;
 use App\Domain\Admin\Results\SubscriptionCancellationInfoResult;
+use App\Domain\Admin\Results\SubscriptionDetailResult;
+use App\Domain\Admin\Results\SubscriptionInvoiceItemResult;
 use Carbon\Carbon;
 
 class AdminSubscriptionPresenter
@@ -98,6 +100,94 @@ class AdminSubscriptionPresenter
         return $sub->interval === 'year'
             ? $sub->unitAmount
             : $sub->unitAmount * 12;
+    }
+
+    public function presentDetail(SubscriptionDetailResult $detail): SubscriptionDetailViewModel
+    {
+        $upcoming = null;
+
+        if ($detail->upcomingInvoice) {
+            $inv     = $detail->upcomingInvoice;
+            $cur     = $inv->currency;
+            $upcoming = [
+                'description'  => $inv->description,
+                'quantity'     => $inv->quantity,
+                'unitAmount'   => $this->formatAmount($inv->unitAmountCents, $cur),
+                'lineAmount'   => $this->formatAmount($inv->amountDueCents, $cur),
+                'subtotal'     => $this->formatAmount($inv->subtotalCents, $cur),
+                'tax'          => $this->formatAmount($inv->taxCents, $cur),
+                'total'        => $this->formatAmount($inv->totalCents, $cur),
+                'amountPaid'   => $this->formatAmount($inv->amountPaidCents, $cur),
+                'amountRemaining' => $this->formatAmount($inv->amountRemainingCents, $cur),
+                'nextBillingDate' => $this->formatDate($inv->nextBillingDate),
+            ];
+        }
+
+        $invoices = array_map(
+            fn (SubscriptionInvoiceItemResult $inv) => [
+                'number'          => $inv->invoiceNumber ?: '—',
+                'status'          => $inv->status,
+                'statusLabel'     => $this->invoiceStatusLabel($inv->status),
+                'statusBadgeClass' => $this->invoiceStatusBadgeClass($inv->status),
+                'amount'          => $this->formatAmount($inv->amountCents, $inv->currency),
+                'interval'        => $this->intervalLabel($inv->interval),
+                'email'           => $detail->userEmail,
+                'date'            => $this->formatDate($inv->createdAt),
+            ],
+            $detail->invoices,
+        );
+
+        $nextDate   = $detail->upcomingInvoice ? $this->formatDate($detail->upcomingInvoice->nextBillingDate) : '—';
+        $periodStart = $detail->upcomingInvoice ? $this->formatDate($detail->upcomingInvoice->periodStart) : $this->formatDate($detail->subscribedAt);
+
+        $currentPeriod = $periodStart . ' – ' . $nextDate;
+
+        return new SubscriptionDetailViewModel(
+            stripeId:          $detail->stripeId,
+            userName:          $detail->userName,
+            userEmail:         $detail->userEmail,
+            statusLabel:       $this->statusLabel($detail->status),
+            statusBadgeClass:  $this->statusBadgeClass($detail->status),
+            subscribedAt:      $this->formatDate($detail->subscribedAt),
+            planName:          $detail->planName,
+            interval:          $this->intervalLabel($detail->interval),
+            formattedAmount:   $this->formatAmount($detail->unitAmountCents, $detail->currency),
+            currentPeriod:     $currentPeriod,
+            upcomingInvoice:   $upcoming,
+            invoices:          $invoices,
+        );
+    }
+
+    private function invoiceStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'paid'   => 'Pagada',
+            'open'   => 'Abierta',
+            'void'   => 'Anulada',
+            'draft'  => 'Borrador',
+            default  => ucfirst($status),
+        };
+    }
+
+    private function invoiceStatusBadgeClass(string $status): string
+    {
+        return match ($status) {
+            'paid'  => 'bg-emerald-900/30 text-emerald-400',
+            'open'  => 'bg-yellow-900/30 text-yellow-400',
+            'void'  => 'bg-[#27272a] text-[#71717a]',
+            default => 'bg-[#27272a] text-[#71717a]',
+        };
+    }
+
+    private function intervalLabel(string $interval): string
+    {
+        return match ($interval) {
+            'month' => 'Mensual',
+            'year'  => 'Anual',
+            'week'  => 'Semanal',
+            'day'   => 'Diario',
+            default => ucfirst($interval),
+        };
     }
 
     public function presentCancellationInfo(SubscriptionCancellationInfoResult $info): SubscriptionCancellationInfoViewModel
