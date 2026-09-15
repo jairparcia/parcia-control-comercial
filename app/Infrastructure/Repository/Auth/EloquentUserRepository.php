@@ -30,14 +30,16 @@ class EloquentUserRepository implements UserRepositoryInterface
 
     public function findOrCreateByGoogle(GoogleCallbackInputDTO $input, string $role): User
     {
-        $existing = User::where('google_id', $input->googleId)->first();
+        $existing = User::where('google_id', $input->googleId)->first()
+            ?? User::where('email', $input->email)->first();
 
         if ($existing) {
             $existing->update([
-                'name'   => $input->name,
-                'email'  => $input->email,
-                'avatar' => $input->avatar,
-                'role'   => $role,
+                'google_id' => $input->googleId,
+                'name'      => $input->name,
+                'email'     => $input->email,
+                'avatar'    => $input->avatar,
+                'role'      => $role,
             ]);
 
             return $existing->fresh();

@@ -17,6 +17,8 @@ class User extends Authenticatable
         'email',
         'avatar',
         'role',
+        'description',
+        'country',
         'webhook_url',
         'onboarded_at',
     ];

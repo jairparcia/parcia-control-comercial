@@ -2,12 +2,16 @@
 
 namespace App\Providers;
 
+use App\Domain\Admin\Contracts\CustomerAdminRepositoryInterface;
+use App\Domain\Admin\Contracts\CustomerProviderGatewayInterface;
 use App\Domain\Admin\Contracts\PlanAdminRepositoryInterface;
 use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
 use App\Domain\Admin\Contracts\SubscriptionAdminRepositoryInterface;
 use App\Domain\Admin\Contracts\SubscriptionProviderGatewayInterface;
+use App\Infrastructure\Gateway\Stripe\StripeCustomerGateway;
 use App\Infrastructure\Gateway\Stripe\StripePlanGateway;
 use App\Infrastructure\Gateway\Stripe\StripeSubscriptionGateway;
+use App\Infrastructure\Repository\Admin\EloquentCustomerAdminRepository;
 use App\Infrastructure\Repository\Admin\EloquentPlanAdminRepository;
 use App\Infrastructure\Repository\Admin\EloquentSubscriptionAdminRepository;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +25,8 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->app->bind(SubscriptionAdminRepositoryInterface::class, EloquentSubscriptionAdminRepository::class);
 
+        $this->app->bind(CustomerAdminRepositoryInterface::class, EloquentCustomerAdminRepository::class);
+
         $this->app->bind(PlanProviderGatewayInterface::class, function () {
             return new StripePlanGateway(
                 new StripeClient(config('cashier.secret')),
@@ -29,6 +35,12 @@ class AdminServiceProvider extends ServiceProvider
 
         $this->app->bind(SubscriptionProviderGatewayInterface::class, function () {
             return new StripeSubscriptionGateway(
+                new StripeClient(config('cashier.secret')),
+            );
+        });
+
+        $this->app->bind(CustomerProviderGatewayInterface::class, function () {
+            return new StripeCustomerGateway(
                 new StripeClient(config('cashier.secret')),
             );
         });

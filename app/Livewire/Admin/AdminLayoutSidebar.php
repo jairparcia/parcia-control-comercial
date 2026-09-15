@@ -35,6 +35,13 @@ class AdminLayoutSidebar extends Component
                 'icon'     => 'subscriptions',
                 'isActive' => $this->active === 'subscriptions',
             ],
+            [
+                'key'      => 'customers',
+                'label'    => 'Customers',
+                'route'    => route('admin.customers'),
+                'icon'     => 'customers',
+                'isActive' => $this->active === 'customers',
+            ],
         ];
 
         return view('livewire.admin.admin-layout-sidebar', [
