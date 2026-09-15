@@ -1,7 +1,7 @@
 <?php
 
 use App\Application\Admin\ListAdminTransactionsService;
-use App\Domain\Admin\Contracts\TransactionProviderGatewayInterface;
+use App\Domain\Admin\Contracts\TransactionAdminRepositoryInterface;
 use App\Domain\Admin\Results\AdminTransactionResult;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -25,104 +25,42 @@ function makeTransactionResult(array $overrides = []): AdminTransactionResult
     );
 }
 
-function makeTransactionService(array $transactions): ListAdminTransactionsService
-{
-    $gateway = Mockery::mock(TransactionProviderGatewayInterface::class);
-    $gateway->allows('listRecent')->andReturn($transactions);
-
-    return new ListAdminTransactionsService($gateway);
-}
-
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-it('returns all transactions when filter is all', function () {
-    $transactions = [
+it('delegates to the repository with the given status filter', function () {
+    $results    = [makeTransactionResult(['status' => 'succeeded'])];
+    $repository = Mockery::mock(TransactionAdminRepositoryInterface::class);
+    $repository->expects('all')->with('succeeded')->once()->andReturn($results);
+
+    $service = new ListAdminTransactionsService($repository);
+
+    expect($service->execute('succeeded'))->toBe($results);
+});
+
+it('uses all as the default status filter', function () {
+    $repository = Mockery::mock(TransactionAdminRepositoryInterface::class);
+    $repository->expects('all')->with('all')->once()->andReturn([]);
+
+    (new ListAdminTransactionsService($repository))->execute();
+});
+
+it('returns whatever the repository returns', function () {
+    $results = [
         makeTransactionResult(['status' => 'succeeded']),
         makeTransactionResult(['status' => 'failed']),
     ];
 
-    $gateway = Mockery::mock(TransactionProviderGatewayInterface::class);
-    $gateway->expects('listRecent')->once()->andReturn($transactions);
+    $repository = Mockery::mock(TransactionAdminRepositoryInterface::class);
+    $repository->allows('all')->andReturn($results);
 
-    $result = (new ListAdminTransactionsService($gateway))->execute('all');
+    $result = (new ListAdminTransactionsService($repository))->execute('all');
 
     expect($result)->toHaveCount(2);
 });
 
-it('returns an empty array when there are no transactions', function () {
-    $gateway = Mockery::mock(TransactionProviderGatewayInterface::class);
-    $gateway->expects('listRecent')->once()->andReturn([]);
+it('returns an empty array when the repository returns nothing', function () {
+    $repository = Mockery::mock(TransactionAdminRepositoryInterface::class);
+    $repository->allows('all')->andReturn([]);
 
-    expect((new ListAdminTransactionsService($gateway))->execute())->toBeEmpty();
-});
-
-it('filters by succeeded status', function () {
-    $transactions = [
-        makeTransactionResult(['status' => 'succeeded']),
-        makeTransactionResult(['status' => 'failed']),
-        makeTransactionResult(['status' => 'succeeded']),
-    ];
-
-    $result = makeTransactionService($transactions)->execute('succeeded');
-
-    expect($result)->toHaveCount(2);
-    expect($result[0]->status)->toBe('succeeded');
-    expect($result[1]->status)->toBe('succeeded');
-});
-
-it('filters by failed status', function () {
-    $transactions = [
-        makeTransactionResult(['status' => 'succeeded']),
-        makeTransactionResult(['status' => 'failed']),
-    ];
-
-    $result = makeTransactionService($transactions)->execute('failed');
-
-    expect($result)->toHaveCount(1);
-    expect($result[0]->status)->toBe('failed');
-});
-
-it('filters by refunded status', function () {
-    $transactions = [
-        makeTransactionResult(['status' => 'succeeded']),
-        makeTransactionResult(['status' => 'refunded']),
-    ];
-
-    $result = makeTransactionService($transactions)->execute('refunded');
-
-    expect($result)->toHaveCount(1);
-    expect($result[0]->status)->toBe('refunded');
-});
-
-it('filters by partially_refunded status', function () {
-    $transactions = [
-        makeTransactionResult(['status' => 'succeeded']),
-        makeTransactionResult(['status' => 'partially_refunded']),
-        makeTransactionResult(['status' => 'partially_refunded']),
-    ];
-
-    $result = makeTransactionService($transactions)->execute('partially_refunded');
-
-    expect($result)->toHaveCount(2);
-});
-
-it('returns empty array when no transactions match the filter', function () {
-    $transactions = [makeTransactionResult(['status' => 'succeeded'])];
-
-    $result = makeTransactionService($transactions)->execute('pending');
-
-    expect($result)->toBeEmpty();
-});
-
-it('re-indexes filtered results as a plain array', function () {
-    $transactions = [
-        makeTransactionResult(['status' => 'failed']),
-        makeTransactionResult(['status' => 'succeeded']),
-        makeTransactionResult(['status' => 'failed']),
-    ];
-
-    $result = makeTransactionService($transactions)->execute('succeeded');
-
-    expect($result)->toHaveCount(1);
-    expect(array_keys($result))->toBe([0]);
+    expect((new ListAdminTransactionsService($repository))->execute())->toBeEmpty();
 });

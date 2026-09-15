@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Application\Admin\SyncInvoiceFromStripeEventService;
+use App\Application\Admin\SyncTransactionFromStripeEventService;
 use App\Application\Subscription\HandleBillingEventService;
 use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
@@ -16,6 +17,7 @@ class StripeWebhookController extends CashierWebhookController
         private readonly UserRepositoryInterface        $users,
         private readonly SubscriptionRepositoryInterface $subscriptions,
         private readonly SyncInvoiceFromStripeEventService $syncInvoice,
+        private readonly SyncTransactionFromStripeEventService $syncTransaction,
     ) {}
 
     protected function handleInvoicePaid(array $payload): Response
@@ -62,6 +64,24 @@ class StripeWebhookController extends CashierWebhookController
         $response = parent::handleCustomerSubscriptionUpdated($payload);
         $this->forward('subscription.updated', $payload);
         return $response;
+    }
+
+    protected function handleChargeSucceeded(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleChargeRefunded(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleChargeUpdated(array $payload): Response
+    {
+        $this->syncTransaction->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
     }
 
     // Resolves user and plan from the raw Stripe payload, then forwards to the application service.

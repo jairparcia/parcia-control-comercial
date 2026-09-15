@@ -1,5 +1,6 @@
 <?php
 
+use App\Application\Admin\ImportStripeTransactionsService;
 use App\Application\Admin\ListAdminTransactionsService;
 use App\Domain\Admin\Results\AdminTransactionResult;
 use App\Livewire\Admin\TransactionsComponent;
@@ -24,6 +25,8 @@ function makeComponentTxResult(array $overrides = []): AdminTransactionResult
         customerEmail:       $overrides['customerEmail']       ?? 'jane@example.com',
         stripeCustomerId:    $overrides['stripeCustomerId']    ?? 'cus_TEST',
         createdAt:           new \DateTimeImmutable('2025-09-20'),
+        id:                  $overrides['id']                  ?? null,
+        userId:              $overrides['userId']              ?? null,
     );
 }
 
@@ -147,4 +150,54 @@ it('re-renders when the statusFilter changes', function () {
         ->test(TransactionsComponent::class)
         ->set('statusFilter', 'succeeded')
         ->assertSet('statusFilter', 'succeeded');
+});
+
+// ── Import ────────────────────────────────────────────────────────────────────
+
+it('dispatches a success toast when new transactions are imported', function () {
+    $this->mock(ListAdminTransactionsService::class)
+        ->shouldReceive('execute')
+        ->andReturn([]);
+
+    $this->mock(ImportStripeTransactionsService::class)
+        ->shouldReceive('execute')
+        ->once()
+        ->andReturn(5);
+
+    Livewire::actingAs(User::factory()->internal()->create())
+        ->test(TransactionsComponent::class)
+        ->call('import')
+        ->assertDispatched('toast', message: '5 transaction(s) imported from Stripe.', type: 'success');
+});
+
+it('dispatches an info toast when there are no new transactions to import', function () {
+    $this->mock(ListAdminTransactionsService::class)
+        ->shouldReceive('execute')
+        ->andReturn([]);
+
+    $this->mock(ImportStripeTransactionsService::class)
+        ->shouldReceive('execute')
+        ->once()
+        ->andReturn(0);
+
+    Livewire::actingAs(User::factory()->internal()->create())
+        ->test(TransactionsComponent::class)
+        ->call('import')
+        ->assertDispatched('toast', message: 'No new transactions to import.', type: 'info');
+});
+
+it('dispatches an error toast when the import throws', function () {
+    $this->mock(ListAdminTransactionsService::class)
+        ->shouldReceive('execute')
+        ->andReturn([]);
+
+    $this->mock(ImportStripeTransactionsService::class)
+        ->shouldReceive('execute')
+        ->once()
+        ->andThrow(new \RuntimeException('Stripe timeout'));
+
+    Livewire::actingAs(User::factory()->internal()->create())
+        ->test(TransactionsComponent::class)
+        ->call('import')
+        ->assertDispatched('toast', type: 'error');
 });
