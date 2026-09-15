@@ -61,7 +61,7 @@
         <div class="border-t border-[#eaeaea] mb-3"></div>
 
         {{-- NAV --}}
-        <nav class="flex flex-col gap-[3px]">
+        <nav class="flex flex-col gap-[6px]">
             @foreach ($items as $item)
                 <a
                     href="{{ $item['route'] }}"
@@ -107,7 +107,7 @@
 
                     {{-- Label --}}
                     @unless($collapsed)
-                        <span class="text-[12.5px] font-normal leading-none text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span class="text-[12.5px] font-normal leading-tight text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
                             {{ $item['label'] }}
                         </span>
                     @endunless
@@ -128,6 +128,12 @@
                 </a>
             @endforeach
         </nav>
+
+        {{-- Notifications --}}
+        <div class="mt-[6px]">
+            @livewire('notification-bell-component', ['collapsed' => $collapsed], key('bell-' . ($collapsed ? '1' : '0')))
+        </div>
+
     </div>
 
     {{-- BOTTOM: Admin + Usuario --}}
@@ -154,7 +160,7 @@
                         </svg>
                     </span>
                     @unless($collapsed)
-                        <span class="text-[12.5px] font-normal leading-none text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span class="text-[12.5px] font-normal leading-tight text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
                             Admin
                         </span>
                     @endunless

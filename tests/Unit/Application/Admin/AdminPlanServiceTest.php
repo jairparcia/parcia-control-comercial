@@ -6,6 +6,8 @@ use App\Domain\Admin\Contracts\PlanProviderGatewayInterface;
 use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 use App\Domain\Admin\Results\ProviderPlanIds;
+use App\Events\PlanPriceChanged;
+use Illuminate\Support\Facades\Event;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -274,6 +276,8 @@ it('addPrice() updates default price in DB when adding to existing product', fun
 // ── setDefaultPrice() ─────────────────────────────────────────────────────────
 
 it('setDefaultPrice() sets the price as default in Stripe and syncs the DB', function () {
+    Event::fake();
+
     $plans = Mockery::mock(PlanAdminRepositoryInterface::class);
     $plans->allows('findById')->andReturn(planResult());
     $plans->expects('updateDefaultPrice')
@@ -289,6 +293,14 @@ it('setDefaultPrice() sets the price as default in Stripe and syncs the DB', fun
     ]);
 
     (new AdminPlanService($plans, $provider))->setDefaultPrice(1, 'price_B');
+
+    Event::assertDispatched(PlanPriceChanged::class, fn ($e) =>
+        $e->planId             === 1     &&
+        $e->planName           === 'Pro' &&
+        $e->newUnitAmountCents === 80000 &&
+        $e->currency           === 'USD' &&
+        $e->interval           === 'year'
+    );
 });
 
 // ── archivePrice() ────────────────────────────────────────────────────────────

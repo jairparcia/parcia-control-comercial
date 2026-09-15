@@ -9,4 +9,7 @@ interface SubscriptionRepositoryInterface
     public function getStatus(int $userId): SubscriptionStatusResult;
 
     public function isActive(int $userId): bool;
+
+    /** @return int[] */
+    public function findActiveSubscriberUserIdsByPlan(int $planId): array;
 }
