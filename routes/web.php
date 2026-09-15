@@ -33,6 +33,7 @@ Route::middleware(['auth', 'requires.internal'])->prefix('admin')->name('admin.'
     Route::view('subscriptions', 'admin.subscriptions')->name('subscriptions');
     Route::view('customers', 'admin.customers')->name('customers');
     Route::view('transactions', 'admin.transactions')->name('transactions');
+    Route::view('invoices', 'admin.invoices')->name('invoices');
 });
 
 // Stripe webhooks — no auth middleware, verified by Stripe signature

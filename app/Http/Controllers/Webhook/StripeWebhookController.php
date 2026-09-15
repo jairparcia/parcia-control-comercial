@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Webhook;
 
+use App\Application\Admin\SyncInvoiceFromStripeEventService;
 use App\Application\Subscription\HandleBillingEventService;
 use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
@@ -11,16 +12,42 @@ use Symfony\Component\HttpFoundation\Response;
 class StripeWebhookController extends CashierWebhookController
 {
     public function __construct(
-        private readonly HandleBillingEventService $billingEventService,
-        private readonly UserRepositoryInterface $users,
+        private readonly HandleBillingEventService      $billingEventService,
+        private readonly UserRepositoryInterface        $users,
         private readonly SubscriptionRepositoryInterface $subscriptions,
+        private readonly SyncInvoiceFromStripeEventService $syncInvoice,
     ) {}
 
     protected function handleInvoicePaid(array $payload): Response
     {
-        $response = parent::handleInvoicePaid($payload);
+        $this->syncInvoice->execute($payload['data']['object']);
         $this->forward('subscription.activated', $payload);
-        return $response;
+        return $this->successMethod();
+    }
+
+    protected function handleInvoicePaymentFailed(array $payload): Response
+    {
+        $this->syncInvoice->execute($payload['data']['object']);
+        $this->forward('payment.failed', $payload);
+        return $this->successMethod();
+    }
+
+    protected function handleInvoiceFinalized(array $payload): Response
+    {
+        $this->syncInvoice->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleInvoiceUpdated(array $payload): Response
+    {
+        $this->syncInvoice->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
+    }
+
+    protected function handleInvoiceVoided(array $payload): Response
+    {
+        $this->syncInvoice->execute($payload['data']['object']);
+        return new Response('Webhook Handled.', 200);
     }
 
     protected function handleCustomerSubscriptionDeleted(array $payload): Response
@@ -34,13 +61,6 @@ class StripeWebhookController extends CashierWebhookController
     {
         $response = parent::handleCustomerSubscriptionUpdated($payload);
         $this->forward('subscription.updated', $payload);
-        return $response;
-    }
-
-    protected function handleInvoicePaymentFailed(array $payload): Response
-    {
-        $response = parent::handleInvoicePaymentFailed($payload);
-        $this->forward('payment.failed', $payload);
         return $response;
     }
 
