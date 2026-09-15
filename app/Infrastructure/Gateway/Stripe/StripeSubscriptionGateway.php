@@ -51,6 +51,40 @@ class StripeSubscriptionGateway implements SubscriptionProviderGatewayInterface
         return $results;
     }
 
+    public function listByCustomerId(string $stripeCustomerId): array
+    {
+        $results = [];
+        $page    = $this->client->subscriptions->all([
+            'customer' => $stripeCustomerId,
+            'limit'    => 10,
+            'expand'   => ['data.customer'],
+        ]);
+
+        foreach ($page->data as $sub) {
+            $priceId = $sub->items->data[0]->price->id ?? null;
+
+            $customer      = $sub->customer;
+            $customerId    = is_string($customer) ? $customer : $customer->id;
+            $customerEmail = is_string($customer) ? null : ($customer->email ?? null);
+            $customerName  = is_string($customer) ? null : ($customer->name ?? null);
+
+            $results[] = new ProviderSubscriptionDataDTO(
+                providerSubscriptionId: $sub->id,
+                providerCustomerId:     $customerId,
+                customerEmail:          $customerEmail,
+                customerName:           $customerName,
+                status:                 $sub->status,
+                priceId:                $priceId,
+                type:                   'default',
+                trialEndsAt:            $sub->trial_end ? new \DateTimeImmutable('@' . $sub->trial_end) : null,
+                endsAt:                 $sub->cancel_at ? new \DateTimeImmutable('@' . $sub->cancel_at) : null,
+                createdAt:              new \DateTimeImmutable('@' . $sub->created),
+            );
+        }
+
+        return $results;
+    }
+
     public function getCancellationInfo(string $stripeSubscriptionId): SubscriptionCancellationInfoResult
     {
         $sub = $this->client->subscriptions->retrieve($stripeSubscriptionId, [

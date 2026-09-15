@@ -10,6 +10,8 @@ readonly class AdminCustomerResult
         public string             $email,
         public ?string            $description,
         public ?string            $country,
+        public bool               $archived,
+        public bool               $hasActiveSub,
         public \DateTimeImmutable $createdAt,
     ) {}
 }

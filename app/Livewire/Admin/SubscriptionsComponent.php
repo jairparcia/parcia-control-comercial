@@ -59,6 +59,7 @@ class SubscriptionsComponent extends Component
                 type: $count > 0 ? 'success' : 'info',
             );
         } catch (\Throwable $e) {
+            report($e);
             $this->dispatch('toast', message: 'Import failed: ' . $e->getMessage(), type: 'error');
         } finally {
             $this->importing = false;
@@ -79,6 +80,7 @@ class SubscriptionsComponent extends Component
             $this->cancelProratedDays    = $info->proratedDays;
             $this->cancelModalOpen       = true;
         } catch (\Throwable $e) {
+            report($e);
             $this->dispatch('toast', message: 'Could not load subscription info: ' . $e->getMessage(), type: 'error');
         }
     }
@@ -107,6 +109,7 @@ class SubscriptionsComponent extends Component
             $this->dispatch('toast', message: $message, type: 'success');
             $this->closeCancelModal();
         } catch (\Throwable $e) {
+            report($e);
             $this->dispatch('toast', message: 'Cancellation failed: ' . $e->getMessage(), type: 'error');
         } finally {
             $this->canceling = false;

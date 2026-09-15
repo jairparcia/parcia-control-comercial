@@ -12,6 +12,9 @@ interface SubscriptionProviderGatewayInterface
     /** @return ProviderSubscriptionDataDTO[] */
     public function listAll(): array;
 
+    /** @return ProviderSubscriptionDataDTO[] */
+    public function listByCustomerId(string $stripeCustomerId): array;
+
     public function getCancellationInfo(string $stripeSubscriptionId): SubscriptionCancellationInfoResult;
 
     public function cancel(CancelSubscriptionInputDTO $input): CancelSubscriptionResultDTO;

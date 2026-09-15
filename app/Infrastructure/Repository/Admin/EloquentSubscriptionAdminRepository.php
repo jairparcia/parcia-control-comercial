@@ -21,6 +21,18 @@ class EloquentSubscriptionAdminRepository implements SubscriptionAdminRepository
             ->all();
     }
 
+    public function findByUserId(int $userId): ?AdminSubscriptionResult
+    {
+        $sub = Subscription::query()
+            ->with(['user', 'plan'])
+            ->where('user_id', $userId)
+            ->whereNotIn('stripe_status', ['canceled'])
+            ->orderByDesc('created_at')
+            ->first();
+
+        return $sub ? $this->toResult($sub) : null;
+    }
+
     public function insertMissing(array $subscriptions): int
     {
         $inserted = 0;

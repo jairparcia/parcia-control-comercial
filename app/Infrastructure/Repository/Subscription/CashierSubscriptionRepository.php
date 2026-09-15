@@ -39,10 +39,29 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
             );
         }
 
+        $renewsAt = null;
+
+        if ($subscription->canceled()) {
+            $renewsAt = $subscription->ends_at?->format('d M Y');
+        } elseif ($subscription->active()) {
+            try {
+                $preview   = $user->stripe()->invoices->createPreview([
+                    'customer'     => $user->stripe_id,
+                    'subscription' => $subscription->stripe_id,
+                ]);
+                $periodEnd = (int) ($preview->period_end ?? 0);
+                if ($periodEnd > 0) {
+                    $renewsAt = date('d M Y', $periodEnd);
+                }
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         return new SubscriptionStatusResult(
             plan: $this->resolvePlan($subscription->stripe_price),
             status: $this->mapStatus($subscription->stripe_status),
-            renewsAt: $subscription->ends_at?->format('d M Y'),
+            renewsAt: $renewsAt,
             cancelledAt: $subscription->canceled() ? $subscription->ends_at?->format('d M Y') : null,
             pmType: $user->pm_type,
             pmLastFour: $user->pm_last_four,
