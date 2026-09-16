@@ -8,6 +8,7 @@ use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
 {
@@ -73,6 +74,24 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
         // Every registered user is active on at least the free plan.
         // Quota enforcement happens in CheckQuotaService, not here.
         return true;
+    }
+
+    public function findActiveSubscriberUserIdsByPlan(int $planId): array
+    {
+        $plan = SubscriptionPlan::find($planId);
+
+        if (! $plan || ! $plan->stripe_product_id) {
+            return [];
+        }
+
+        return DB::table('subscriptions')
+            ->join('subscription_items', 'subscription_items.subscription_id', '=', 'subscriptions.id')
+            ->where('subscription_items.stripe_product', $plan->stripe_product_id)
+            ->whereIn('subscriptions.stripe_status', ['active', 'trialing'])
+            ->pluck('subscriptions.user_id')
+            ->unique()
+            ->values()
+            ->toArray();
     }
 
     private function mapStatus(?string $stripeStatus): SubscriptionStatus

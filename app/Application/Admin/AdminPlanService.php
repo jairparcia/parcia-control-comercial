@@ -8,6 +8,7 @@ use App\Domain\Admin\Entities\CreateAdminPlanInputDTO;
 use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 use App\Domain\Admin\Results\PlanPriceResult;
+use App\Events\PlanPriceChanged;
 
 class AdminPlanService
 {
@@ -142,13 +143,25 @@ class AdminPlanService
 
         $this->provider->setDefaultPrice($plan->stripeProductId, $stripePriceId);
 
+        $newUnitAmount = (int) ($price['unit_amount'] ?? 0);
+        $currency      = strtoupper($price['currency']);
+        $interval      = $price['recurring']['interval'];
+
         $this->plans->updateDefaultPrice(
             id:              $planId,
             stripePriceId:   $stripePriceId,
-            unitAmountCents: (int) ($price['unit_amount'] ?? 0),
-            currency:        strtoupper($price['currency']),
-            interval:        $price['recurring']['interval'],
+            unitAmountCents: $newUnitAmount,
+            currency:        $currency,
+            interval:        $interval,
         );
+
+        event(new PlanPriceChanged(
+            planId:             $planId,
+            planName:           $plan->name,
+            newUnitAmountCents: $newUnitAmount,
+            currency:           $currency,
+            interval:           $interval,
+        ));
     }
 
     public function archivePrice(int $planId, string $stripePriceId): void
