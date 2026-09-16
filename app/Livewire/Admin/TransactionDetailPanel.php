@@ -35,6 +35,8 @@ class TransactionDetailPanel extends Component
     public ?string $cardIssuer      = null;
     public ?string $cardCountry     = null;
     public ?string $cvcCheckLabel   = null;
+    public bool    $cvcCheckPassed  = false;
+    public string  $cvcCheckClass   = 'text-[#a1a1aa]';
     public ?string $billingName     = null;
     public ?string $billingEmail    = null;
     public ?string $billingCountry  = null;
@@ -110,6 +112,8 @@ class TransactionDetailPanel extends Component
         $this->cardIssuer       = $vm->cardIssuer;
         $this->cardCountry      = $vm->cardCountry;
         $this->cvcCheckLabel    = $vm->cvcCheckLabel;
+        $this->cvcCheckPassed   = $vm->cvcCheckPassed;
+        $this->cvcCheckClass    = $vm->cvcCheckClass;
         $this->billingName      = $vm->billingName;
         $this->billingEmail     = $vm->billingEmail;
         $this->billingCountry   = $vm->billingCountry;

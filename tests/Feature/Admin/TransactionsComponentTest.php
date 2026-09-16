@@ -102,7 +102,7 @@ it('shows the empty state when there are no transactions', function () {
 
     Livewire::actingAs(User::factory()->internal()->create())
         ->test(TransactionsComponent::class)
-        ->assertSee('No transactions found');
+        ->assertSee('No se encontraron transacciones');
 });
 
 it('renders multiple transactions', function () {
@@ -167,7 +167,7 @@ it('dispatches a success toast when new transactions are imported', function () 
     Livewire::actingAs(User::factory()->internal()->create())
         ->test(TransactionsComponent::class)
         ->call('import')
-        ->assertDispatched('toast', message: '5 transaction(s) imported from Stripe.', type: 'success');
+        ->assertDispatched('toast', message: '5 transacción(es) importada(s) de Stripe.', type: 'success');
 });
 
 it('dispatches an info toast when there are no new transactions to import', function () {
@@ -183,7 +183,7 @@ it('dispatches an info toast when there are no new transactions to import', func
     Livewire::actingAs(User::factory()->internal()->create())
         ->test(TransactionsComponent::class)
         ->call('import')
-        ->assertDispatched('toast', message: 'No new transactions to import.', type: 'info');
+        ->assertDispatched('toast', message: 'No hay nuevas transacciones para importar.', type: 'info');
 });
 
 it('dispatches an error toast when the import throws', function () {

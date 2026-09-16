@@ -2,9 +2,7 @@
 
 namespace App\Livewire\Admin;
 
-use App\Application\Admin\CreateAdminPlanService;
-use App\Application\Admin\ListAdminPlansService;
-use App\Application\Admin\UpdateAdminPlanService;
+use App\Application\Admin\AdminPlanService;
 use App\Http\Presenters\Admin\AdminPlanPresenter;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,40 +18,34 @@ class PlanFormPanel extends Component
     public string $formDescription = '';
     public string $formFeatures    = '';
     public int    $formQuota       = 100;
-    public int    $formUnitAmount  = 0;
-    public string $formCurrency    = 'MXN';
-    public string $formInterval    = 'month';
     public int    $formSortOrder   = 0;
 
-    private ListAdminPlansService  $listService;
-    private CreateAdminPlanService $createService;
-    private UpdateAdminPlanService $updateService;
-    private AdminPlanPresenter     $presenter;
+    public array  $prices           = [];
+    public bool   $showPriceForm    = false;
+    public int    $newPriceAmount   = 0;
+    public string $newPriceCurrency = 'MXN';
+    public string $newPriceInterval = 'month';
+
+    private AdminPlanService   $planService;
+    private AdminPlanPresenter $presenter;
 
     public function boot(
-        ListAdminPlansService  $listService,
-        CreateAdminPlanService $createService,
-        UpdateAdminPlanService $updateService,
-        AdminPlanPresenter     $presenter,
+        AdminPlanService   $planService,
+        AdminPlanPresenter $presenter,
     ): void {
-        $this->listService   = $listService;
-        $this->createService = $createService;
-        $this->updateService = $updateService;
-        $this->presenter     = $presenter;
+        $this->planService = $planService;
+        $this->presenter   = $presenter;
     }
 
     #[On('open-plan-form')]
     public function openPanel(?int $id): void
     {
         if ($id === null) {
-            $this->reset(['formName', 'formKey', 'formDescription', 'formFeatures', 'formSortOrder', 'editingId']);
-            $this->formQuota      = 100;
-            $this->formUnitAmount = 0;
-            $this->formCurrency   = 'MXN';
-            $this->formInterval   = 'month';
-            $this->isEditing      = false;
+            $this->reset(['formName', 'formKey', 'formDescription', 'formFeatures', 'formSortOrder', 'editingId', 'prices', 'showPriceForm', 'newPriceAmount', 'newPriceCurrency', 'newPriceInterval']);
+            $this->formQuota = 100;
+            $this->isEditing = false;
         } else {
-            $plan = collect($this->listService->execute())->firstWhere('id', $id);
+            $plan = collect($this->planService->list())->firstWhere('id', $id);
 
             if (! $plan) {
                 return;
@@ -64,16 +56,100 @@ class PlanFormPanel extends Component
             $this->formDescription = $plan->description;
             $this->formFeatures    = implode("\n", $plan->features);
             $this->formQuota       = $plan->quota;
-            $this->formUnitAmount  = intval($plan->unitAmount / 100);
-            $this->formCurrency    = $plan->currency;
-            $this->formInterval    = $plan->interval;
             $this->formSortOrder   = $plan->sortOrder;
             $this->isEditing       = true;
             $this->editingId       = $id;
+
+            $this->loadPrices();
         }
 
         $this->resetValidation();
         $this->panelOpen = true;
+    }
+
+    public function loadPrices(): void
+    {
+        if (! $this->isEditing || ! $this->editingId) {
+            $this->prices = [];
+            return;
+        }
+
+        try {
+            $results = $this->planService->listPrices($this->editingId);
+
+            $this->prices = array_map(fn ($p) => [
+                'stripeId'      => $p->stripeId,
+                'amount'        => $this->formatAmount($p->unitAmountCents, $p->currency),
+                'interval'      => $p->interval === 'month' ? 'Mensual' : 'Anual',
+                'isDefault'     => $p->isDefault,
+                'isActive'      => $p->isActive,
+                'subscriptions' => $p->activeSubscriptionsCount,
+                'createdAt'     => $p->createdAt->format('d M Y'),
+            ], $results);
+        } catch (\Throwable) {
+            $this->prices = [];
+        }
+    }
+
+    public function archivePrice(string $stripePriceId): void
+    {
+        try {
+            $this->planService->archivePrice($this->editingId, $stripePriceId);
+            $this->loadPrices();
+            $this->dispatch('toast', message: __('admin.price_archived'), type: 'success');
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function setDefaultPrice(string $stripePriceId): void
+    {
+        try {
+            $this->planService->setDefaultPrice($this->editingId, $stripePriceId);
+            $this->loadPrices();
+            $this->dispatch('plan-saved');
+            $this->dispatch('toast', message: __('admin.default_price_updated'), type: 'success');
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function openPriceForm(): void
+    {
+        $this->showPriceForm    = true;
+        $this->newPriceAmount   = 0;
+        $this->newPriceCurrency = 'MXN';
+        $this->newPriceInterval = 'month';
+    }
+
+    public function cancelPriceForm(): void
+    {
+        $this->showPriceForm = false;
+    }
+
+    public function addPrice(): void
+    {
+        $this->validate([
+            'newPriceAmount'   => 'required|integer|min:1',
+            'newPriceCurrency' => 'required|in:MXN,USD',
+            'newPriceInterval' => 'required|in:month,year',
+        ]);
+
+        try {
+            $this->planService->addPrice(
+                $this->editingId,
+                $this->newPriceAmount * 100,
+                $this->newPriceCurrency,
+                $this->newPriceInterval,
+            );
+
+            $this->showPriceForm = false;
+            $this->loadPrices();
+            $this->dispatch('plan-saved');
+            $this->dispatch('toast', message: __('admin.price_added'), type: 'success');
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
     }
 
     public function close(): void
@@ -85,62 +161,53 @@ class PlanFormPanel extends Component
     {
         if ($this->isEditing) {
             $this->validate([
-                'formName'       => 'required|min:2|max:100',
-                'formQuota'      => 'required|integer|min:0',
-                'formUnitAmount' => 'required|integer|min:0',
-                'formCurrency'   => 'required|in:MXN,USD',
-                'formInterval'   => 'required|in:month,year',
-                'formSortOrder'  => 'required|integer|min:0',
+                'formName'      => 'required|min:2|max:100',
+                'formQuota'     => 'required|integer|min:0',
+                'formSortOrder' => 'required|integer|min:0',
             ]);
 
             try {
-                $this->updateService->execute(
+                $this->planService->update(
                     planId:      $this->editingId,
                     name:        $this->formName,
                     description: $this->formDescription,
                     features:    $this->parseFeatures(),
                     quota:       $this->formQuota,
-                    unitAmount:  $this->formUnitAmount * 100,
-                    currency:    $this->formCurrency,
-                    interval:    $this->formInterval,
                     sortOrder:   $this->formSortOrder,
                 );
 
                 $this->panelOpen = false;
                 $this->dispatch('plan-saved');
-                $this->dispatch('toast', message: 'Plan updated successfully.', type: 'success');
+                $this->dispatch('toast', message: __('admin.plan_updated'), type: 'success');
             } catch (\Throwable $e) {
-                $this->dispatch('toast', message: 'Could not save plan: ' . $e->getMessage(), type: 'error');
+                $this->dispatch('toast', message: $e->getMessage(), type: 'error');
             }
         } else {
             $this->validate([
-                'formName'       => 'required|min:2|max:100',
-                'formKey'        => 'required|alpha_dash|max:30|unique:plans,key',
-                'formQuota'      => 'required|integer|min:0',
-                'formUnitAmount' => 'required|integer|min:0',
-                'formCurrency'   => 'required|in:MXN,USD',
-                'formInterval'   => 'required|in:month,year',
-                'formSortOrder'  => 'required|integer|min:0',
+                'formName'      => 'required|min:2|max:100',
+                'formKey'       => 'required|alpha_dash|max:30|unique:plans,key',
+                'formQuota'     => 'required|integer|min:0',
+                'formSortOrder' => 'required|integer|min:0',
             ]);
 
             try {
-                $this->createService->execute(
+                $this->planService->create(
                     name:        $this->formName,
                     key:         $this->formKey,
                     description: $this->formDescription,
                     features:    $this->parseFeatures(),
                     quota:       $this->formQuota,
-                    unitAmount:  $this->formUnitAmount * 100,
-                    currency:    $this->formCurrency,
-                    interval:    $this->formInterval,
+                    unitAmount:  0,
+                    currency:    'MXN',
+                    interval:    'month',
                     sortOrder:   $this->formSortOrder,
                 );
 
                 $this->panelOpen = false;
                 $this->dispatch('plan-saved');
-                $this->dispatch('toast', message: 'Plan created successfully.', type: 'success');
+                $this->dispatch('toast', message: __('admin.plan_created'), type: 'success');
             } catch (\Throwable $e) {
-                $this->dispatch('toast', message: 'Could not create plan: ' . $e->getMessage(), type: 'error');
+                $this->dispatch('toast', message: $e->getMessage(), type: 'error');
             }
         }
     }
@@ -150,6 +217,12 @@ class PlanFormPanel extends Component
         return array_values(array_filter(
             array_map('trim', explode("\n", $this->formFeatures)),
         ));
+    }
+
+    private function formatAmount(int $cents, string $currency): string
+    {
+        $symbol = strtoupper($currency) === 'USD' ? 'US$' : 'MX$';
+        return $symbol . number_format($cents / 100, 2);
     }
 
     public function render()

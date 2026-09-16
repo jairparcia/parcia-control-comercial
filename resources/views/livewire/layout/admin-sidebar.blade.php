@@ -39,22 +39,20 @@
                 </button>
 
                 @unless($collapsed)
-                    <button
-                        type="button"
-                        wire:click="toggle"
-                        title="Colapsar sidebar"
-                        class="
-                            w-[30px] h-[30px] rounded-[7px] flex items-center justify-center
-                            bg-transparent border-0 shrink-0
-                            cursor-ew-resize text-[#7c7c86]
-                            hover:bg-[#eaeaea] transition-colors duration-150
-                        "
-                    >
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <line x1="9" y1="3" x2="9" y2="21"/>
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <x-language-switcher />
+                        <button
+                            type="button"
+                            wire:click="toggle"
+                            title="{{ __('common.collapse_sidebar') }}"
+                            class="w-[30px] h-[30px] rounded-[7px] flex items-center justify-center bg-transparent border-0 shrink-0 cursor-ew-resize text-[#7c7c86] hover:bg-[#eaeaea] transition-colors duration-150"
+                        >
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <line x1="9" y1="3" x2="9" y2="21"/>
+                            </svg>
+                        </button>
+                    </div>
                 @endunless
             </div>
         </header>
@@ -63,7 +61,7 @@
         <div class="border-t border-[#eaeaea] mb-3"></div>
 
         {{-- NAV --}}
-        <nav class="flex flex-col gap-[3px]">
+        <nav class="flex flex-col gap-[6px]">
             @foreach ($items as $item)
                 <a
                     href="{{ $item['route'] }}"
@@ -109,7 +107,7 @@
 
                     {{-- Label --}}
                     @unless($collapsed)
-                        <span class="text-[12.5px] font-normal leading-none text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span class="text-[12.5px] font-normal leading-tight text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
                             {{ $item['label'] }}
                         </span>
                     @endunless
@@ -130,6 +128,12 @@
                 </a>
             @endforeach
         </nav>
+
+        {{-- Notifications --}}
+        <div class="mt-[6px]">
+            @livewire('notification-bell-component', ['collapsed' => $collapsed], key('bell-' . ($collapsed ? '1' : '0')))
+        </div>
+
     </div>
 
     {{-- BOTTOM: Admin + Usuario --}}
@@ -156,7 +160,7 @@
                         </svg>
                     </span>
                     @unless($collapsed)
-                        <span class="text-[12.5px] font-normal leading-none text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span class="text-[12.5px] font-normal leading-tight text-[#353636] whitespace-nowrap overflow-hidden text-ellipsis">
                             Admin
                         </span>
                     @endunless
@@ -190,7 +194,7 @@
                         @csrf
                         <button
                             type="submit"
-                            title="Cerrar sesión"
+                            title="{{ __('common.log_out') }}"
                             class="w-[28px] h-[28px] rounded-[7px] flex items-center justify-center text-[#7c7c86] hover:text-[#353636] hover:bg-[#eaeaea] transition-colors duration-150"
                         >
                             <svg class="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">

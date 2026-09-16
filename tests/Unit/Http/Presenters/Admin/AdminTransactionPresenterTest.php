@@ -157,7 +157,7 @@ it('returns Bank transfer label for bank_transfer type', function () {
         'paymentMethodType' => 'bank_transfer',
         'cardBrand'         => null,
         'cardLast4'         => null,
-    ])->paymentMethod)->toBe('Bank transfer');
+    ])->paymentMethod)->toBe('Transferencia bancaria');
 });
 
 it('returns dash when payment method type and card are both null', function () {

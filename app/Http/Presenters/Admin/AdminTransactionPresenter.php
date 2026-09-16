@@ -62,6 +62,12 @@ class AdminTransactionPresenter
             cardIssuer:      $detail->cardIssuer,
             cardCountry:     $detail->cardCountry,
             cvcCheckLabel:   $this->cvcCheckLabel($detail->cvcCheck),
+            cvcCheckPassed:  $detail->cvcCheck === 'pass',
+            cvcCheckClass:   match ($detail->cvcCheck) {
+                'pass'  => 'text-emerald-400',
+                'fail'  => 'text-red-400',
+                default => 'text-[#a1a1aa]',
+            },
             billingName:     $detail->billingName,
             billingEmail:    $detail->billingEmail,
             billingCountry:  $detail->billingCountry,
@@ -86,10 +92,10 @@ class AdminTransactionPresenter
         }
 
         $fundingLabel = match ($funding) {
-            'credit'  => 'tarjeta de crédito',
-            'debit'   => 'tarjeta de débito',
-            'prepaid' => 'prepago',
-            default   => 'tarjeta',
+            'credit'  => __('common.card_credit'),
+            'debit'   => __('common.card_debit'),
+            'prepaid' => __('common.card_prepaid'),
+            default   => __('common.card_default'),
         };
 
         return $fundingLabel . ' ' . $brand;
@@ -98,10 +104,10 @@ class AdminTransactionPresenter
     private function cvcCheckLabel(?string $check): ?string
     {
         return match ($check) {
-            'pass'        => 'Superada',
-            'fail'        => 'Fallida',
-            'unavailable' => 'No disponible',
-            'unchecked'   => 'No verificado',
+            'pass'        => __('common.cvc_passed'),
+            'fail'        => __('common.cvc_failed'),
+            'unavailable' => __('common.cvc_unavailable'),
+            'unchecked'   => __('common.cvc_unchecked'),
             default       => null,
         };
     }
@@ -109,11 +115,11 @@ class AdminTransactionPresenter
     private function statusLabel(string $status): string
     {
         return match ($status) {
-            'succeeded'           => 'Exitoso',
-            'pending'             => 'Pendiente',
-            'failed'              => 'Fallido',
-            'refunded'            => 'Reembolsado',
-            'partially_refunded'  => 'Parcialmente reembolsado',
+            'succeeded'           => __('common.tx_successful'),
+            'pending'             => __('common.tx_pending'),
+            'failed'              => __('common.tx_failed'),
+            'refunded'            => __('common.tx_refunded'),
+            'partially_refunded'  => __('common.tx_partially_refunded'),
             default               => ucfirst($status),
         };
     }
@@ -138,9 +144,9 @@ class AdminTransactionPresenter
 
         if ($type) {
             return match ($type) {
-                'card'          => 'Card',
+                'card'          => __('common.pm_card'),
                 'oxxo'          => 'OXXO',
-                'bank_transfer' => 'Bank transfer',
+                'bank_transfer' => __('common.pm_bank_transfer'),
                 'sepa_debit'    => 'SEPA debit',
                 default         => ucfirst(str_replace('_', ' ', $type)),
             };

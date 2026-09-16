@@ -7,6 +7,7 @@ use App\Domain\Admin\Entities\CreateAdminPlanInputDTO;
 use App\Domain\Admin\Entities\UpdateAdminPlanInputDTO;
 use App\Domain\Admin\Results\AdminPlanResult;
 use App\Models\SubscriptionPlan;
+use Illuminate\Support\Facades\DB;
 
 class EloquentPlanAdminRepository implements PlanAdminRepositoryInterface
 {
@@ -47,29 +48,17 @@ class EloquentPlanAdminRepository implements PlanAdminRepositoryInterface
         return $this->toResult($plan);
     }
 
-    public function update(
-        int $id,
-        UpdateAdminPlanInputDTO $input,
-        ?string $newStripePriceId = null,
-    ): AdminPlanResult {
+    public function update(int $id, UpdateAdminPlanInputDTO $input): AdminPlanResult
+    {
         $plan = SubscriptionPlan::findOrFail($id);
 
-        $data = [
+        $plan->update([
             'name'        => $input->name,
             'description' => $input->description,
             'features'    => $input->features,
-            'unit_amount' => $input->unitAmount,
-            'currency'    => $input->currency,
-            'interval'    => $input->interval,
             'quota'       => $input->quota,
             'sort_order'  => $input->sortOrder,
-        ];
-
-        if ($newStripePriceId !== null) {
-            $data['stripe_price_id'] = $newStripePriceId;
-        }
-
-        $plan->update($data);
+        ]);
 
         return $this->toResult($plan->fresh());
     }
@@ -92,6 +81,47 @@ class EloquentPlanAdminRepository implements PlanAdminRepositoryInterface
             $legacy[] = $oldPriceId;
             $plan->update(['legacy_stripe_price_ids' => $legacy]);
         }
+    }
+
+    public function countActiveSubscriptionsForPrice(string $stripePriceId): int
+    {
+        return DB::table('subscription_items')
+            ->join('subscriptions', 'subscriptions.id', '=', 'subscription_items.subscription_id')
+            ->where('subscription_items.stripe_price', $stripePriceId)
+            ->whereIn('subscriptions.stripe_status', ['active', 'trialing'])
+            ->count();
+    }
+
+    public function updateDefaultPrice(
+        int $id,
+        string $stripePriceId,
+        int $unitAmountCents,
+        string $currency,
+        string $interval,
+    ): void {
+        SubscriptionPlan::findOrFail($id)->update([
+            'stripe_price_id' => $stripePriceId,
+            'unit_amount'     => $unitAmountCents,
+            'currency'        => $currency,
+            'interval'        => $interval,
+        ]);
+    }
+
+    public function setStripeIds(
+        int $id,
+        string $productId,
+        string $priceId,
+        int $unitAmountCents,
+        string $currency,
+        string $interval,
+    ): void {
+        SubscriptionPlan::findOrFail($id)->update([
+            'stripe_product_id' => $productId,
+            'stripe_price_id'   => $priceId,
+            'unit_amount'       => $unitAmountCents,
+            'currency'          => $currency,
+            'interval'          => $interval,
+        ]);
     }
 
     private function toResult(SubscriptionPlan $plan): AdminPlanResult
