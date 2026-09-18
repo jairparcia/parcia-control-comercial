@@ -4,8 +4,8 @@ use App\Application\Auth\HandleGoogleCallbackService;
 use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
-use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
+use App\Domain\Subscription\Results\PlanInfo;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 use App\Models\User;
 
@@ -13,7 +13,7 @@ function mockSubscriptionsOnFreePlan(): SubscriptionRepositoryInterface
 {
     $subscriptions = Mockery::mock(SubscriptionRepositoryInterface::class);
     $subscriptions->allows('getStatus')->andReturn(new SubscriptionStatusResult(
-        plan: Plan::Free,
+        plan: new PlanInfo(key: 'free', name: 'Gratuito', formattedPrice: 'Gratis', interval: 'month', currency: 'MXN', quota: 10),
         status: SubscriptionStatus::Active,
         renewsAt: null,
         cancelledAt: null,
@@ -126,7 +126,7 @@ it('treats a user with a real subscribed plan as onboarded even if onboarded_at 
 
     $subscriptions = Mockery::mock(SubscriptionRepositoryInterface::class);
     $subscriptions->allows('getStatus')->andReturn(new SubscriptionStatusResult(
-        plan: Plan::Pro,
+        plan: new PlanInfo(key: 'pro', name: 'Pro', formattedPrice: 'MX$250', interval: 'month', currency: 'MXN', quota: 2000),
         status: SubscriptionStatus::Active,
         renewsAt: null,
         cancelledAt: null,

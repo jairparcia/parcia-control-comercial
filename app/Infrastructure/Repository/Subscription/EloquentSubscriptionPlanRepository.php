@@ -15,17 +15,15 @@ class EloquentSubscriptionPlanRepository implements SubscriptionPlanRepositoryIn
             ->where('key', '!=', 'internal')
             ->orderBy('sort_order')
             ->get()
-            ->map(fn ($plan) => new PlanInfo(
-                key:            $plan->key,
-                name:           $plan->name,
-                formattedPrice: $this->formatPrice($plan->unit_amount, $plan->currency),
-                interval:       $plan->interval,
-                currency:       $plan->currency,
-                quota:          $plan->quota,
-                isFree:         $plan->unit_amount === 0,
-                features:       $plan->features ?? [],
-            ))
+            ->map(fn (SubscriptionPlan $plan) => $this->toPlanInfo($plan))
             ->all();
+    }
+
+    public function findByKey(string $key): ?PlanInfo
+    {
+        $plan = SubscriptionPlan::where('key', $key)->first();
+
+        return $plan ? $this->toPlanInfo($plan) : null;
     }
 
     public function findStripePriceId(string $planKey): string
@@ -39,6 +37,20 @@ class EloquentSubscriptionPlanRepository implements SubscriptionPlanRepositoryIn
         }
 
         return $record->stripe_price_id;
+    }
+
+    private function toPlanInfo(SubscriptionPlan $plan): PlanInfo
+    {
+        return new PlanInfo(
+            key:            $plan->key,
+            name:           $plan->name,
+            formattedPrice: $this->formatPrice($plan->unit_amount, $plan->currency),
+            interval:       $plan->interval,
+            currency:       $plan->currency,
+            quota:          $plan->quota,
+            isFree:         $plan->unit_amount === 0,
+            features:       $plan->features ?? [],
+        );
     }
 
     private function formatPrice(int $unitAmount, string $currency): string

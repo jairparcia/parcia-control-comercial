@@ -1,17 +1,18 @@
 <?php
 
-use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Infrastructure\Repository\Subscription\CashierSubscriptionRepository;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
+use Database\Seeders\PlansSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(PlansSeeder::class);
     $this->repo = app(CashierSubscriptionRepository::class);
 });
 
@@ -61,7 +62,7 @@ it('returns free plan for user without a stripe subscription', function () {
 
     $result = $this->repo->getStatus($user->id);
 
-    expect($result->plan)->toBe(Plan::Free)
+    expect($result->plan->key)->toBe('free')
         ->and($result->status)->toBe(SubscriptionStatus::Active)
         ->and($result->renewsAt)->toBeNull();
 });
@@ -79,7 +80,7 @@ it('returns internal plan for internal users regardless of stripe', function () 
 
     $result = $this->repo->getStatus($user->id);
 
-    expect($result->plan)->toBe(Plan::Internal)
+    expect($result->plan->key)->toBe('internal')
         ->and($result->status)->toBe(SubscriptionStatus::Active);
 });
 

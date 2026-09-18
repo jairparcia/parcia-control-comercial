@@ -10,4 +10,6 @@ interface SubscriptionPlanRepositoryInterface
     public function findAllActive(): array;
 
     public function findStripePriceId(string $planKey): string;
+
+    public function findByKey(string $key): ?PlanInfo;
 }

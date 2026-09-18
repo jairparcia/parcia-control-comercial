@@ -2,13 +2,17 @@
 
 namespace App\Http\Presenters;
 
-use App\Domain\Subscription\Enums\Plan;
+use App\Domain\Subscription\Results\PlanInfo;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 
 class DashboardPresenter
 {
+    /**
+     * @param PlanInfo[] $availablePlans
+     */
     public function __construct(
         private readonly SubscriptionStatusResult $status,
+        private readonly array $availablePlans = [],
     ) {}
 
     // ── Usage ─────────────────────────────────────────────────────────────
@@ -65,7 +69,7 @@ class DashboardPresenter
 
     public function planName(): string
     {
-        return $this->status->plan?->label() ?? 'Gratuito';
+        return $this->status->plan?->name ?? 'Gratuito';
     }
 
     public function planExpiry(): string
@@ -75,7 +79,16 @@ class DashboardPresenter
 
     public function isUpgradeable(): bool
     {
-        return ! in_array($this->status->plan, [Plan::Agency, Plan::Internal]);
+        $plan = $this->status->plan;
+
+        if ($plan === null || $plan->key === 'internal' || empty($this->availablePlans)) {
+            return false;
+        }
+
+        $plans      = $this->availablePlans;
+        $topPlanKey = end($plans)->key;
+
+        return $plan->key !== $topPlanKey;
     }
 
     public function upgradeWarning(): string

@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Repository\Subscription;
 
+use App\Domain\Subscription\Contracts\SubscriptionPlanRepositoryInterface;
 use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
-use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Domain\Subscription\Results\SubscriptionStatusResult;
 use App\Models\SubscriptionPlan;
@@ -12,13 +12,17 @@ use Illuminate\Support\Facades\DB;
 
 class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
 {
+    public function __construct(
+        private readonly SubscriptionPlanRepositoryInterface $plans,
+    ) {}
+
     public function getStatus(int $userId): SubscriptionStatusResult
     {
         $user = User::findOrFail($userId);
 
         if ($user->isInternal()) {
             return new SubscriptionStatusResult(
-                plan: Plan::Internal,
+                plan: $this->plans->findByKey('internal'),
                 status: SubscriptionStatus::Active,
                 renewsAt: null,
                 cancelledAt: null,
@@ -31,7 +35,7 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
 
         if (! $subscription) {
             return new SubscriptionStatusResult(
-                plan: Plan::Free,
+                plan: $this->plans->findByKey('free'),
                 status: SubscriptionStatus::Active,
                 renewsAt: null,
                 cancelledAt: null,
@@ -59,8 +63,10 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
             }
         }
 
+        $planKey = $this->resolvePlanKey($subscription->stripe_price);
+
         return new SubscriptionStatusResult(
-            plan: $this->resolvePlan($subscription->stripe_price),
+            plan: $planKey ? $this->plans->findByKey($planKey) : null,
             status: $this->mapStatus($subscription->stripe_status),
             renewsAt: $renewsAt,
             cancelledAt: $subscription->canceled() ? $subscription->ends_at?->format('d M Y') : null,
@@ -105,7 +111,7 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
         };
     }
 
-    private function resolvePlan(?string $stripePrice): ?Plan
+    private function resolvePlanKey(?string $stripePrice): ?string
     {
         if (! $stripePrice) {
             return null;
@@ -114,6 +120,6 @@ class CashierSubscriptionRepository implements SubscriptionRepositoryInterface
         $plan = SubscriptionPlan::where('stripe_price_id', $stripePrice)->first()
             ?? SubscriptionPlan::whereJsonContains('legacy_stripe_price_ids', $stripePrice)->first();
 
-        return $plan ? Plan::tryFrom($plan->key) : null;
+        return $plan?->key;
     }
 }

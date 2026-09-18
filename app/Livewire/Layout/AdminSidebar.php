@@ -68,7 +68,7 @@ class AdminSidebar extends Component
             'userInitials'  => strtoupper(mb_substr($name, 0, 2)),
             'userPlan'      => $user?->isInternal()
                 ? __('admin.parcia_team')
-                : 'Plan ' . ($status->plan?->label() ?? __('common.free')),
+                : 'Plan ' . ($status->plan?->name ?? __('common.free')),
         ]);
     }
 }
