@@ -89,7 +89,7 @@ class StripeWebhookController extends CashierWebhookController
     {
         $customerId = $payload['data']['object']['customer'] ?? null;
         $user       = $customerId ? $this->users->findByStripeCustomerId($customerId) : null;
-        $planKey    = $user ? $this->subscriptions->getStatus($user->id)->plan?->value : null;
+        $planKey    = $user ? $this->subscriptions->getStatus($user->id)->plan?->key : null;
 
         $this->billingEventService->execute(
             event:   $event,

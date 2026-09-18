@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Subscription\Enums\Plan;
 use App\Infrastructure\Repository\Admin\EloquentPlanAdminRepository;
 use App\Infrastructure\Repository\Subscription\CashierSubscriptionRepository;
 use App\Models\SubscriptionPlan;
@@ -77,10 +76,10 @@ it('resolves a plan for a subscriber on the current price ID', function () {
         'quantity'      => 1,
     ]);
 
-    $repo   = new CashierSubscriptionRepository();
+    $repo   = app(CashierSubscriptionRepository::class);
     $result = $repo->getStatus($user->id);
 
-    expect($result->plan)->toBe(Plan::Pro);
+    expect($result->plan->key)->toBe('pro');
 });
 
 it('resolves a plan for a subscriber on a legacy price ID', function () {
@@ -103,10 +102,10 @@ it('resolves a plan for a subscriber on a legacy price ID', function () {
         'quantity'      => 1,
     ]);
 
-    $repo   = new CashierSubscriptionRepository();
+    $repo   = app(CashierSubscriptionRepository::class);
     $result = $repo->getStatus($user->id);
 
-    expect($result->plan)->toBe(Plan::Pro);
+    expect($result->plan->key)->toBe('pro');
 });
 
 it('returns null plan when price ID is unknown', function () {
@@ -121,8 +120,34 @@ it('returns null plan when price ID is unknown', function () {
         'quantity'      => 1,
     ]);
 
-    $repo   = new CashierSubscriptionRepository();
+    $repo   = app(CashierSubscriptionRepository::class);
     $result = $repo->getStatus($user->id);
 
     expect($result->plan)->toBeNull();
+});
+
+it('resolves a plan for a subscriber on a non-canonical, admin-created plan key', function () {
+    $plan = SubscriptionPlan::create([
+        'key' => 'tes', 'name' => 'Custom Test Plan', 'unit_amount' => 15000,
+        'stripe_price_id' => 'price_CUSTOM', 'stripe_product_id' => 'prod_CUSTOM',
+        'currency' => 'MXN', 'interval' => 'month', 'quota' => 100,
+        'sort_order' => 5, 'active' => true,
+    ]);
+
+    $user = User::factory()->create(['stripe_id' => 'cus_CUSTOM']);
+
+    Subscription::create([
+        'user_id'       => $user->id,
+        'type'          => 'default',
+        'stripe_id'     => 'sub_CUSTOM',
+        'stripe_status' => 'active',
+        'stripe_price'  => 'price_CUSTOM',
+        'quantity'      => 1,
+    ]);
+
+    $repo   = app(CashierSubscriptionRepository::class);
+    $result = $repo->getStatus($user->id);
+
+    expect($result->plan->key)->toBe('tes')
+        ->and($result->plan->name)->toBe('Custom Test Plan');
 });

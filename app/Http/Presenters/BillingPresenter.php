@@ -25,7 +25,7 @@ class BillingPresenter
     public function planLabel(): string
     {
         return $this->status->plan
-            ? 'Plan ' . $this->status->plan->label()
+            ? 'Plan ' . $this->status->plan->name
             : 'Sin plan';
     }
 
@@ -84,7 +84,7 @@ class BillingPresenter
     public function plans(): array
     {
         $paidPlans  = array_values(array_filter($this->availablePlans, fn ($p) => ! $p->isFree));
-        $currentKey = $this->status->plan?->value;
+        $currentKey = $this->status->plan?->key;
         $keys       = array_column($paidPlans, 'key');
         $highlight  = $this->resolveHighlight($keys);
 

@@ -4,7 +4,6 @@ namespace App\Application\Subscription;
 
 use App\Domain\Subscription\Entities\BillingEventInputDTO;
 use App\Domain\Subscription\Enums\BillingEvent;
-use App\Domain\Subscription\Enums\Plan;
 use Illuminate\Support\Facades\Log;
 
 class HandleBillingEventService
@@ -12,9 +11,9 @@ class HandleBillingEventService
     public function execute(string $event, ?int $userId, ?string $planKey): void
     {
         $input = new BillingEventInputDTO(
-            event:  BillingEvent::from($event),
-            userId: $userId,
-            plan:   $planKey ? Plan::from($planKey) : null,
+            event:   BillingEvent::from($event),
+            userId:  $userId,
+            planKey: $planKey,
         );
 
         match ($input->event) {
@@ -30,7 +29,7 @@ class HandleBillingEventService
         // TODO: GenerateLicenseKeyService::execute($input->userId) — LicenseKeys context
         Log::info('Billing: subscription activated', [
             'user_id' => $input->userId,
-            'plan'    => $input->plan?->value,
+            'plan'    => $input->planKey,
         ]);
     }
 
@@ -46,7 +45,7 @@ class HandleBillingEventService
     {
         Log::info('Billing: subscription updated', [
             'user_id' => $input->userId,
-            'plan'    => $input->plan?->value,
+            'plan'    => $input->planKey,
         ]);
     }
 

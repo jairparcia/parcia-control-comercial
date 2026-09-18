@@ -2,13 +2,12 @@
 
 namespace App\Domain\Subscription\Results;
 
-use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 
 readonly class SubscriptionStatusResult
 {
     public function __construct(
-        public ?Plan $plan,
+        public ?PlanInfo $plan,
         public SubscriptionStatus $status,
         public ?string $renewsAt,
         public ?string $cancelledAt,
@@ -26,6 +25,6 @@ readonly class SubscriptionStatusResult
     // whether onboarded_at was persisted.
     public function hasSubscribedPlan(): bool
     {
-        return $this->plan !== null && $this->plan !== Plan::Free;
+        return $this->plan !== null && $this->plan->key !== 'free';
     }
 }

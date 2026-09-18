@@ -3,7 +3,6 @@
 use App\Application\Subscription\CreateCheckoutSessionService;
 use App\Application\Subscription\GetAvailablePlansService;
 use App\Application\Subscription\GetSubscriptionStatusService;
-use App\Domain\Subscription\Enums\Plan;
 use App\Domain\Subscription\Enums\SubscriptionStatus;
 use App\Domain\Subscription\Results\CheckoutSessionResult;
 use App\Domain\Subscription\Results\PlanInfo;
@@ -51,7 +50,7 @@ it('redirects users with a real subscribed plan away from onboarding even if onb
     $user = User::factory()->create(['onboarded_at' => null]);
 
     mockSubscriptionStatus(new SubscriptionStatusResult(
-        plan: Plan::Pro,
+        plan: new PlanInfo(key: 'pro', name: 'Pro', formattedPrice: 'MX$250', interval: 'month', currency: 'MXN', quota: 2000),
         status: SubscriptionStatus::Active,
         renewsAt: null,
         cancelledAt: null,
