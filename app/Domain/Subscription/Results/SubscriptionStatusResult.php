@@ -20,4 +20,12 @@ readonly class SubscriptionStatusResult
     {
         return $this->status->isActive();
     }
+
+    // True once the user has actually picked a real (non-free) plan — used to
+    // tell "never onboarded" apart from "already subscribed", regardless of
+    // whether onboarded_at was persisted.
+    public function hasSubscribedPlan(): bool
+    {
+        return $this->plan !== null && $this->plan !== Plan::Free;
+    }
 }

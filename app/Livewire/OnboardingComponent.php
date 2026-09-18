@@ -38,7 +38,7 @@ class OnboardingComponent extends Component
         $result = $this->checkoutService->execute(
             userId:     auth()->id(),
             planKey:    $key,
-            successUrl: route('dashboard'),
+            successUrl: route('onboarding.complete'),
             cancelUrl:  route('onboarding'),
         );
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\CompleteOnboardingController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Subscription\BillingPortalController;
 use App\Http\Controllers\Webhook\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +20,8 @@ if (app()->isLocal()) {
 }
 
 Route::middleware(['auth'])->group(function () {
-    Route::view('onboarding', 'onboarding')->name('onboarding');
+    Route::view('onboarding', 'onboarding')->middleware('redirect.if.onboarded')->name('onboarding');
+    Route::get('onboarding/complete', CompleteOnboardingController::class)->name('onboarding.complete');
 
     Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::view('creators', 'creators')->name('creators');
@@ -39,6 +42,6 @@ Route::middleware(['auth', 'requires.internal'])->prefix('admin')->name('admin.'
 // Stripe webhooks — no auth middleware, verified by Stripe signature
 Route::post('stripe/webhook', [StripeWebhookController::class, 'handleWebhook'])->name('stripe.webhook');
 
-Route::post('locale', \App\Http\Controllers\LocaleController::class)->name('locale.switch');
+Route::post('locale', LocaleController::class)->name('locale.switch');
 
 require __DIR__.'/auth.php';

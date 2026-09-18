@@ -3,7 +3,26 @@
 use App\Application\Auth\HandleGoogleCallbackService;
 use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
+use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
+use App\Domain\Subscription\Enums\Plan;
+use App\Domain\Subscription\Enums\SubscriptionStatus;
+use App\Domain\Subscription\Results\SubscriptionStatusResult;
 use App\Models\User;
+
+function mockSubscriptionsOnFreePlan(): SubscriptionRepositoryInterface
+{
+    $subscriptions = Mockery::mock(SubscriptionRepositoryInterface::class);
+    $subscriptions->allows('getStatus')->andReturn(new SubscriptionStatusResult(
+        plan: Plan::Free,
+        status: SubscriptionStatus::Active,
+        renewsAt: null,
+        cancelledAt: null,
+        pmType: null,
+        pmLastFour: null,
+    ));
+
+    return $subscriptions;
+}
 
 // ── resolveRole ───────────────────────────────────────────────────────────────
 
@@ -14,11 +33,11 @@ it('assigns internal role to new users with parcia.co email', function () {
         ->with(Mockery::type(GoogleCallbackInputDTO::class), 'internal')
         ->andReturn(User::factory()->make(['id' => 1, 'role' => 'internal']));
 
-    $result = (new HandleGoogleCallbackService($repo))->execute(
+    $result = (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
         googleId: 'g-new',
-        name:     'Parcia Member',
-        email:    'member@parcia.co',
-        avatar:   null,
+        name: 'Parcia Member',
+        email: 'member@parcia.co',
+        avatar: null,
     );
 
     expect($result->role)->toBe('internal');
@@ -31,11 +50,11 @@ it('assigns external role to new users with non-parcia email', function () {
         ->with(Mockery::type(GoogleCallbackInputDTO::class), 'external')
         ->andReturn(User::factory()->make(['id' => 2, 'role' => 'external']));
 
-    $result = (new HandleGoogleCallbackService($repo))->execute(
+    $result = (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
         googleId: 'g-ext',
-        name:     'External User',
-        email:    'user@gmail.com',
-        avatar:   null,
+        name: 'External User',
+        email: 'user@gmail.com',
+        avatar: null,
     );
 
     expect($result->role)->toBe('external');
@@ -51,11 +70,11 @@ it('preserves existing role on re-login regardless of email domain', function ()
         ->with(Mockery::type(GoogleCallbackInputDTO::class), 'internal')
         ->andReturn($existingUser);
 
-    (new HandleGoogleCallbackService($repo))->execute(
+    (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
         googleId: 'g-existing',
-        name:     'Parcia Member',
-        email:    'member@parcia.co',
-        avatar:   null,
+        name: 'Parcia Member',
+        email: 'member@parcia.co',
+        avatar: null,
     );
 
     expect(true)->toBeTrue();
@@ -68,11 +87,11 @@ it('marks result as new when user did not exist before', function () {
     $repo->allows('findByGoogleId')->andReturn(null);
     $repo->allows('findOrCreateByGoogle')->andReturn($newUser);
 
-    $result = (new HandleGoogleCallbackService($repo))->execute(
+    $result = (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
         googleId: 'g-brand-new',
-        name:     'New User',
-        email:    'new@example.com',
-        avatar:   null,
+        name: 'New User',
+        email: 'new@example.com',
+        avatar: null,
     );
 
     expect($result->isNew)->toBeTrue();
@@ -85,12 +104,60 @@ it('marks result as not new when user already existed', function () {
     $repo->allows('findByGoogleId')->andReturn($existing);
     $repo->allows('findOrCreateByGoogle')->andReturn($existing);
 
-    $result = (new HandleGoogleCallbackService($repo))->execute(
+    $result = (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
         googleId: 'g-returning',
-        name:     'Returning User',
-        email:    'returning@example.com',
-        avatar:   null,
+        name: 'Returning User',
+        email: 'returning@example.com',
+        avatar: null,
     );
 
     expect($result->isNew)->toBeFalse();
+});
+
+// ── onboarding self-heal via subscription status ───────────────────────────
+
+it('treats a user with a real subscribed plan as onboarded even if onboarded_at is null', function () {
+    $user = User::factory()->make(['id' => 7, 'role' => 'external', 'onboarded_at' => null]);
+
+    $repo = Mockery::mock(UserRepositoryInterface::class);
+    $repo->allows('findByGoogleId')->andReturn($user);
+    $repo->allows('findOrCreateByGoogle')->andReturn($user);
+    $repo->expects('markOnboarded')->once()->with(7);
+
+    $subscriptions = Mockery::mock(SubscriptionRepositoryInterface::class);
+    $subscriptions->allows('getStatus')->andReturn(new SubscriptionStatusResult(
+        plan: Plan::Pro,
+        status: SubscriptionStatus::Active,
+        renewsAt: null,
+        cancelledAt: null,
+        pmType: null,
+        pmLastFour: null,
+    ));
+
+    $result = (new HandleGoogleCallbackService($repo, $subscriptions))->execute(
+        googleId: 'g-subscribed',
+        name: 'Subscribed User',
+        email: 'subscribed@example.com',
+        avatar: null,
+    );
+
+    expect($result->hasOnboarded)->toBeTrue();
+});
+
+it('does not treat a free-plan user as onboarded', function () {
+    $user = User::factory()->make(['id' => 8, 'role' => 'external', 'onboarded_at' => null]);
+
+    $repo = Mockery::mock(UserRepositoryInterface::class);
+    $repo->allows('findByGoogleId')->andReturn($user);
+    $repo->allows('findOrCreateByGoogle')->andReturn($user);
+    $repo->expects('markOnboarded')->never();
+
+    $result = (new HandleGoogleCallbackService($repo, mockSubscriptionsOnFreePlan()))->execute(
+        googleId: 'g-free',
+        name: 'Free User',
+        email: 'free@example.com',
+        avatar: null,
+    );
+
+    expect($result->hasOnboarded)->toBeFalse();
 });
