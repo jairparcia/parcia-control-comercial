@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\RedirectIfOnboarded;
+use App\Http\Middleware\RequiresInternalRole;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,9 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
         ]);
-        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
+        $middleware->appendToGroup('web', SetLocale::class);
         $middleware->alias([
-            'requires.internal' => \App\Http\Middleware\RequiresInternalRole::class,
+            'requires.internal' => RequiresInternalRole::class,
+            'redirect.if.onboarded' => RedirectIfOnboarded::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -5,12 +5,14 @@ namespace App\Application\Auth;
 use App\Domain\Auth\Contracts\UserRepositoryInterface;
 use App\Domain\Auth\Entities\GoogleCallbackInputDTO;
 use App\Domain\Auth\Results\AuthenticatedUserResult;
+use App\Domain\Subscription\Contracts\SubscriptionRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 
 class HandleGoogleCallbackService
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
+        private readonly SubscriptionRepositoryInterface $subscriptions,
     ) {}
 
     private function resolveRole(string $email, ?string $existingRole): string
@@ -35,22 +37,28 @@ class HandleGoogleCallbackService
 
         $input = new GoogleCallbackInputDTO(
             googleId: $googleId,
-            name:     $name,
-            email:    $email,
-            avatar:   $avatar,
+            name: $name,
+            email: $email,
+            avatar: $avatar,
         );
 
         $user = $this->users->findOrCreateByGoogle($input, $role);
 
         Auth::login($user);
 
+        $hasOnboarded = $user->hasOnboarded() || $this->subscriptions->getStatus($user->id)->hasSubscribedPlan();
+
+        if ($hasOnboarded && ! $user->hasOnboarded()) {
+            $this->users->markOnboarded($user->id);
+        }
+
         return new AuthenticatedUserResult(
-            userId:       $user->id,
-            name:         $user->name,
-            email:        $user->email,
-            role:         $user->role,
-            isNew:        $existing === null,
-            hasOnboarded: $user->hasOnboarded(),
+            userId: $user->id,
+            name: $user->name,
+            email: $user->email,
+            role: $user->role,
+            isNew: $existing === null,
+            hasOnboarded: $hasOnboarded,
         );
     }
 }
