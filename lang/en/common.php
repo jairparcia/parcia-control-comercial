@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'all_rights_reserved' => 'All rights reserved.',
+
     // UI actions
     'cancel'           => 'Cancel',
     'refresh'          => '↻ Refresh',

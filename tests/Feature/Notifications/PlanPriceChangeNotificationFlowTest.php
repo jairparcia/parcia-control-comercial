@@ -2,13 +2,17 @@
 
 use App\Domain\Notifications\Enums\NotificationType;
 use App\Events\PlanPriceChanged;
+use App\Mail\NotificationMail;
 use App\Models\Notification;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
-it('creates an in-app notification for every active subscriber when a plan price changes', function () {
+it('creates an in-app notification and emails every active subscriber when a plan price changes', function () {
+    Mail::fake();
+
     $plan = SubscriptionPlan::create([
         'key'               => 'pro',
         'name'              => 'Pro',
@@ -59,9 +63,17 @@ it('creates an in-app notification for every active subscriber when a plan price
     expect($notification->type)->toBe(NotificationType::PlanPriceChanged->value)
         ->and($notification->title)->toBe(__('notifications.plan_price_changed_title', ['plan' => 'Pro']))
         ->and($notification->read_at)->toBeNull();
+
+    Mail::assertQueued(NotificationMail::class, function (NotificationMail $mail) use ($subscriber, $notification) {
+        return $mail->hasTo($subscriber->email)
+            && $mail->title === $notification->title;
+    });
+    Mail::assertQueued(NotificationMail::class, 1);
 });
 
-it('does not create any notification when the plan has no active subscribers', function () {
+it('does not create any notification or email when the plan has no active subscribers', function () {
+    Mail::fake();
+
     $plan = SubscriptionPlan::create([
         'key'               => 'starter',
         'name'              => 'Starter',
@@ -83,4 +95,6 @@ it('does not create any notification when the plan has no active subscribers', f
     ));
 
     expect(Notification::count())->toBe(0);
+    Mail::assertNothingQueued();
+    Mail::assertNothingSent();
 });
